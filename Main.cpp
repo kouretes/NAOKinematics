@@ -6,9 +6,9 @@ using namespace std;
 int main(){
 	NAOKinematics *nkin = new NAOKinematics();
 
-	FKvars output1, output2, output3, output4, output5;
+	NAOKinematics::FKvars output1, output2, output3, output4, output5;
 	std::vector<float> flh,frh,fll,frl,fc,empty;
-	float pi = KMatTransf::PI;
+	float pi = KMath::KMat::transformations::PI;
 	
 	//Left Hand
 	flh.push_back(pi/2);flh.push_back(0);flh.push_back(0);flh.push_back(-0.04);

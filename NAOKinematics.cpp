@@ -1,4 +1,5 @@
-#include <NAOKinematics.h>
+#include "NAOKinematics.h"
+using namespace KMath;
 
 void NAOKinematics::forwardLeftHand(kmatTable & EndTransf, float ShoulderPitch, float ShoulderRoll, float ElbowYaw, float ElbowRoll)
 {
@@ -91,7 +92,7 @@ void NAOKinematics::forwardCamera(kmatTable & EndTransf, float HeadYaw, float He
 	EndTransf = Tend;
 }
 
-void NAOKinematics::filterForward(kmatTable & Tmatrix, string WhatForward, std::vector<float> joints)
+void NAOKinematics::filterForward(kmatTable & Tmatrix, std::string WhatForward, std::vector<float> joints)
 {
 	Tmatrix.zero();
 	std::vector<float>::iterator iter;
@@ -167,7 +168,7 @@ void NAOKinematics::filterForward(kmatTable & Tmatrix, string WhatForward, std::
 	Tmatrix.check();
 }
 
-FKvars NAOKinematics::filterForwardFromTo(std::string start, std::string stop, std::vector<float> jointsStart, std::vector<float> jointsEnd)
+NAOKinematics::FKvars NAOKinematics::filterForwardFromTo(std::string start, std::string stop, std::vector<float> jointsStart, std::vector<float> jointsEnd)
 {
 	if(!start.compare("Torso"))
 	{
@@ -195,7 +196,7 @@ FKvars NAOKinematics::filterForwardFromTo(std::string start, std::string stop, s
 	return FKVariables;
 }
 
-kmatTable NAOKinematics::forwardFromTo(std::string start, std::string stop, std::vector<float> jointsStart, std::vector<float> jointsEnd)
+NAOKinematics::kmatTable NAOKinematics::forwardFromTo(std::string start, std::string stop, std::vector<float> jointsStart, std::vector<float> jointsEnd)
 {
 	if(!start.compare("Torso"))
 	{
@@ -216,11 +217,36 @@ kmatTable NAOKinematics::forwardFromTo(std::string start, std::string stop, std:
 	return Tmatrix1;
 }
 
-FKvars NAOKinematics::calculateCenterOfMass(vector<float> allJoints)
+NAOKinematics::FKvars NAOKinematics::calculateCenterOfMass(std::vector<float> allJoints)
 {
 	kmatTable endTr1, endTr2, endTr3, endTr4, endTr5, endTr6, temp;
-	KMat::GenMatrix<float, 3, 1> lh1, lh2, lh3, lh4, rh1, rh2, rh3, rh4, ll1, ll2, ll3, ll4, ll5, ll6, rl1, rl2, rl3, rl4, rl5, rl6, h1, h2, t;
+	KMath::KMat::GenMatrix<float, 3, 1> lh1, lh2, lh3, lh4, rh1, rh2, rh3, rh4, ll1, ll2, ll3, ll4, ll5, ll6, rl1, rl2, rl3, rl4, rl5, rl6, h1, h2, t;
 	float PI = KMatTransf::PI;
+	
+	if(allJoints.size() != 22)
+		std::cout << "Kinematics CoM fatal: joints vector not equal to 22" << std::endl;
+	
+	//Head
+	KMatTransf::makeTranslation(endTr1, HeadYawX, HeadYawY, HeadYawZ);
+	KMatTransf::makeTranslation(endTr2, HeadPitchX, HeadPitchY, HeadPitchZ);
+	KMatTransf::makeTranslation(base, 0.0f, 0.0f, NeckOffsetZ);
+	KMatTransf::makeDHTransformation(T1, 0.0f, 0.0f, 0.0f, allJoints.front());
+	allJoints.erase(allJoints.begin());
+	KMatTransf::makeDHTransformation(T2, 0.0f, -PI / 2, 0.0f, allJoints.front() - PI / 2);
+	allJoints.erase(allJoints.begin());
+	base *= T1;
+	temp = base;
+	temp *= endTr1;
+	h1 = temp.get_translation();
+	h1.scalar_mult(HeadYawMass);
+	base *= T2;
+	temp = base;
+	temp *= RotHead;
+	temp *= endTr2;
+	h2 = temp.get_translation();
+	h2.scalar_mult(HeadPitchMass);
+	h1 += h2;
+
 	//Left Hand
 	KMatTransf::makeTranslation(endTr1, LShoulderPitchX, LShoulderPitchY, LShoulderPitchZ);
 	KMatTransf::makeTranslation(endTr2, LShoulderRollX, LShoulderRollY, LShoulderRollZ);
@@ -237,64 +263,32 @@ FKvars NAOKinematics::calculateCenterOfMass(vector<float> allJoints)
 	allJoints.erase(allJoints.begin());
 	base *= T1;
 	temp = base;
+	temp *= RotLHshouldP;
 	temp *= endTr1;
 	lh1 = temp.get_translation();
 	lh1.scalar_mult(LShoulderPitchMass);
 	base *= T2;
 	temp = base;
+	temp *= RotLHshoulR;
 	temp *= endTr2;
 	lh2 = temp.get_translation();
 	lh2.scalar_mult(LShoulderRollMass);
 	base *= T3;
 	temp = base;
+	temp *= RotLHelbowY;
 	temp *= endTr3;
 	lh3 = temp.get_translation();
 	lh3.scalar_mult(LElbowYawMass);
 	base *= T4;
 	temp = base;
+	temp *= RotLArm;
 	temp *= endTr4;
 	lh4 = temp.get_translation();
 	lh4.scalar_mult(LElbowRollMass);
 	lh1 += lh2;
 	lh1 += lh3;
 	lh1 += lh4;
-	//Right Hand
-	KMatTransf::makeTranslation(endTr1, RShoulderPitchX, RShoulderPitchY, RShoulderPitchZ);
-	KMatTransf::makeTranslation(endTr2, RShoulderRollX, RShoulderRollY, RShoulderRollZ);
-	KMatTransf::makeTranslation(endTr3, RElbowYawX, RElbowYawY, RElbowYawZ);
-	KMatTransf::makeTranslation(endTr4, RElbowRollX, RElbowRollY, RElbowRollZ);
-	KMatTransf::makeTranslation(base, 0.0f, -(ShoulderOffsetY + ElbowOffsetY), allJoints.front());
-	KMatTransf::makeDHTransformation(T1, 0.0f, -PI / 2, 0.0f, allJoints.front());
-	allJoints.erase(allJoints.begin());
-	KMatTransf::makeDHTransformation(T2, 0.0f, PI / 2, 0.0f, allJoints.front() + PI / 2);
-	allJoints.erase(allJoints.begin());
-	KMatTransf::makeDHTransformation(T3, 0.0f, -PI / 2, -UpperArmLength, allJoints.front());
-	allJoints.erase(allJoints.begin());
-	KMatTransf::makeDHTransformation(T4, 0.0f, PI / 2, 0.0f, allJoints.front());
-	allJoints.erase(allJoints.begin());
-	base *= T1;
-	temp = base;
-	temp *= endTr1;
-	rh1 = temp.get_translation();
-	rh1.scalar_mult(RShoulderPitchMass);
-	base *= T2;
-	temp = base;
-	temp *= endTr2;
-	rh2 = temp.get_translation();
-	rh2.scalar_mult(RShoulderRollMass);
-	base *= T3;
-	temp = base;
-	temp *= endTr3;
-	rh3 = temp.get_translation();
-	rh3.scalar_mult(RElbowYawMass);
-	base *= T4;
-	temp = base;
-	temp *= endTr4;
-	rh4 = temp.get_translation();
-	rh4.scalar_mult(RElbowRollMass);
-	rh1 += rh2;
-	rh1 += rh3;
-	rh1 += rh4;
+
 	//Left Leg
 	KMatTransf::makeTranslation(endTr1, LHipYawPitchX, LHipYawPitchY, LHipYawPitchZ);
 	KMatTransf::makeTranslation(endTr2, LHipRollX, LHipRollY, LHipRollZ);
@@ -317,31 +311,37 @@ FKvars NAOKinematics::calculateCenterOfMass(vector<float> allJoints)
 	allJoints.erase(allJoints.begin());
 	base *= T1;
 	temp = base;
+	temp *= RotLLhipYP;
 	temp *= endTr1;
 	ll1 = temp.get_translation();
 	ll1.scalar_mult(LHipYawPitchMass);
 	base *= T2;
 	temp = base;
+	temp *= RotLLhipR;
 	temp *= endTr2;
 	ll2 = temp.get_translation();
 	ll2.scalar_mult(LHipRollMass);
 	base *= T3;
 	temp = base;
+	temp *= RotLLallPitchs;
 	temp *= endTr3;
 	ll3 = temp.get_translation();
 	ll3.scalar_mult(LHipPitchMass);
 	base *= T4;
 	temp = base;
+	temp *= RotLLallPitchs;
 	temp *= endTr4;
 	ll4 = temp.get_translation();
 	ll4.scalar_mult(LKneePitchMass);
 	base *= T5;
 	temp = base;
+	temp *= RotLLallPitchs;
 	temp *= endTr5;
 	ll5 = temp.get_translation();
 	ll5.scalar_mult(LAnklePitchMass);
 	base *= T6;
 	temp = base;
+	temp *= RotLLeg;
 	temp *= endTr6;
 	ll6 = temp.get_translation();
 	ll6.scalar_mult(LAnkleRollMass);
@@ -350,6 +350,7 @@ FKvars NAOKinematics::calculateCenterOfMass(vector<float> allJoints)
 	ll1 += ll4;
 	ll1 += ll5;
 	ll1 += ll6;
+
 	//Right Leg
 	KMatTransf::makeTranslation(endTr1, RHipYawPitchX, RHipYawPitchY, RHipYawPitchZ);
 	KMatTransf::makeTranslation(endTr2, RHipRollX, RHipRollY, RHipRollZ);
@@ -372,31 +373,37 @@ FKvars NAOKinematics::calculateCenterOfMass(vector<float> allJoints)
 	allJoints.erase(allJoints.begin());
 	base *= T1;
 	temp = base;
+	temp *= RotRLhipYP;
 	temp *= endTr1;
 	rl1 = temp.get_translation();
 	rl1.scalar_mult(RHipYawPitchMass);
 	base *= T2;
 	temp = base;
+	temp *= RotRLhipR;
 	temp *= endTr2;
 	rl2 = temp.get_translation();
 	rl2.scalar_mult(RHipRollMass);
 	base *= T3;
 	temp = base;
+	temp *= RotRLallPitchs;
 	temp *= endTr3;
 	rl3 = temp.get_translation();
 	rl3.scalar_mult(RHipPitchMass);
 	base *= T4;
 	temp = base;
+	temp *= RotRLallPitchs;
 	temp *= endTr4;
 	rl4 = temp.get_translation();
 	rl4.scalar_mult(RKneePitchMass);
 	base *= T5;
 	temp = base;
+	temp *= RotRLallPitchs;
 	temp *= endTr5;
 	rl5 = temp.get_translation();
 	rl5.scalar_mult(RAnklePitchMass);
 	base *= T6;
 	temp = base;
+	temp *= RotRLeg;
 	temp *= endTr6;
 	rl6 = temp.get_translation();
 	rl6.scalar_mult(RAnkleRollMass);
@@ -405,25 +412,49 @@ FKvars NAOKinematics::calculateCenterOfMass(vector<float> allJoints)
 	rl1 += rl4;
 	rl1 += rl5;
 	rl1 += rl6;
-	//Head
-	KMatTransf::makeTranslation(endTr1, HeadYawX, HeadYawY, HeadYawZ);
-	KMatTransf::makeTranslation(endTr2, HeadPitchX, HeadPitchY, HeadPitchZ);
-	KMatTransf::makeTranslation(base, 0.0f, 0.0f, NeckOffsetZ);
-	KMatTransf::makeDHTransformation(T1, 0.0f, 0.0f, 0.0f, allJoints.front());
+
+	//Right Hand
+	KMatTransf::makeTranslation(endTr1, RShoulderPitchX, RShoulderPitchY, RShoulderPitchZ);
+	KMatTransf::makeTranslation(endTr2, RShoulderRollX, RShoulderRollY, RShoulderRollZ);
+	KMatTransf::makeTranslation(endTr3, RElbowYawX, RElbowYawY, RElbowYawZ);
+	KMatTransf::makeTranslation(endTr4, RElbowRollX, RElbowRollY, RElbowRollZ);
+	KMatTransf::makeTranslation(base, 0.0f, -(ShoulderOffsetY + ElbowOffsetY), allJoints.front());
+	KMatTransf::makeDHTransformation(T1, 0.0f, -PI / 2, 0.0f, allJoints.front());
 	allJoints.erase(allJoints.begin());
-	KMatTransf::makeDHTransformation(T2, 0.0f, -PI / 2, 0.0f, allJoints.front() - PI / 2);
+	KMatTransf::makeDHTransformation(T2, 0.0f, PI / 2, 0.0f, allJoints.front() + PI / 2);
+	allJoints.erase(allJoints.begin());
+	KMatTransf::makeDHTransformation(T3, 0.0f, -PI / 2, -UpperArmLength, allJoints.front());
+	allJoints.erase(allJoints.begin());
+	KMatTransf::makeDHTransformation(T4, 0.0f, PI / 2, 0.0f, allJoints.front());
 	allJoints.erase(allJoints.begin());
 	base *= T1;
 	temp = base;
+	temp *= RotRHshouldP;
 	temp *= endTr1;
-	h1 = temp.get_translation();
-	h1.scalar_mult(HeadYawMass);
+	rh1 = temp.get_translation();
+	rh1.scalar_mult(RShoulderPitchMass);
 	base *= T2;
 	temp = base;
+	temp *= RotRHshoulR;
 	temp *= endTr2;
-	h2 = temp.get_translation();
-	h2.scalar_mult(HeadPitchMass);
-	h1 += h2;
+	rh2 = temp.get_translation();
+	rh2.scalar_mult(RShoulderRollMass);
+	base *= T3;
+	temp = base;
+	temp *= RotRHelbowY;
+	temp *= endTr3;
+	rh3 = temp.get_translation();
+	rh3.scalar_mult(RElbowYawMass);
+	base *= T4;
+	temp = base;
+	temp *= RotRHelbowR;
+	temp *= endTr4;
+	rh4 = temp.get_translation();
+	rh4.scalar_mult(RElbowRollMass);
+	rh1 += rh2;
+	rh1 += rh3;
+	rh1 += rh4;
+
 	//Torso
 	t(0, 0) = TorsoX;
 	t(1, 0) = TorsoY;
@@ -446,10 +477,10 @@ FKvars NAOKinematics::calculateCenterOfMass(vector<float> allJoints)
 	return FKVariables;
 }
 
-vector<vector<float> > NAOKinematics::inverseHead(float px, float py, float pz, float rx, float ry, float rz, bool withAngles, bool topCamera)
+std::vector<std::vector<float> > NAOKinematics::inverseHead(float px, float py, float pz, float rx, float ry, float rz, bool withAngles, bool topCamera)
 {
 	std::vector<float> fc, empty;
-	std::vector<vector<float> > returnResult;
+	std::vector<std::vector<float> > returnResult;
 	FKvars output;
 	KMatTransf::makeTransformation(T, px, py, pz, rx, ry, rz);
 	float theta1, theta2;
@@ -559,10 +590,10 @@ vector<vector<float> > NAOKinematics::inverseHead(float px, float py, float pz, 
 	return returnResult;
 }
 
-vector<vector<float> > NAOKinematics::inverseLeftHand(float px, float py, float pz, float rx, float ry, float rz)
+std::vector<std::vector<float> > NAOKinematics::inverseLeftHand(float px, float py, float pz, float rx, float ry, float rz)
 {
 	std::vector<float> flh, empty;
-	std::vector<vector<float> > returnResult;
+	std::vector<std::vector<float> > returnResult;
 	KMatTransf::makeTransformation(Tinit, px, py, pz, rx, ry, rz);
 	float startX = 0;
 	float startY = ShoulderOffsetY + ElbowOffsetY;
@@ -674,10 +705,10 @@ vector<vector<float> > NAOKinematics::inverseLeftHand(float px, float py, float 
 }
 
 
-vector<vector<float> > NAOKinematics::inverseRightHand(float px, float py, float pz, float rx, float ry, float rz)
+std::vector<std::vector<float> > NAOKinematics::inverseRightHand(float px, float py, float pz, float rx, float ry, float rz)
 {
 	std::vector<float> frh, empty;
-	std::vector<vector<float> > returnResult;
+	std::vector<std::vector<float> > returnResult;
 	//Rotate input to remvoe Rfix
 	KMatTransf::makeTransformation(T, px, py, pz, rx, ry, rz);
 	Tinit = T;
@@ -799,10 +830,10 @@ vector<vector<float> > NAOKinematics::inverseRightHand(float px, float py, float
 	return returnResult;
 }
 
-vector<vector<float> > NAOKinematics::inverseLeftLeg(float px, float py, float pz, float rx, float ry, float rz)
+std::vector<std::vector<float> > NAOKinematics::inverseLeftLeg(float px, float py, float pz, float rx, float ry, float rz)
 {
 	std::vector<float> fll, empty;
-	std::vector<vector<float> > returnResult;
+	std::vector<std::vector<float> > returnResult;
 	KMatTransf::makeTransformation(T, px, py, pz, rx, ry, rz);
 	Tinit = T;
 	//Move the start point to the hipyawpitch point
@@ -848,7 +879,7 @@ vector<vector<float> > NAOKinematics::inverseLeftLeg(float px, float py, float p
 		TtempTheta5 = Tstart;
 		TtempTheta5.fast_invert();
 	}
-	catch(KMat::SingularMatrixInvertionException d)
+	catch(KMath::KMat::SingularMatrixInvertionException d)
 	{
 		return returnResult;
 	}
@@ -857,7 +888,7 @@ vector<vector<float> > NAOKinematics::inverseLeftLeg(float px, float py, float p
 	{
 		theta4 = (itter == 0) ? theta4 : -theta4;
 
-		if(theta4 < LKneePitchLow || theta4 > LKneePitchHigh)
+		if(theta4 < RKneePitchLow || theta4 > RKneePitchHigh)
 			continue;
 
 		KMatTransf::makeDHTransformation(T4i, -ThighLength, 0.0f, 0.0f, theta4);
@@ -888,7 +919,7 @@ vector<vector<float> > NAOKinematics::inverseLeftLeg(float px, float py, float p
 			{
 				Ttemp.fast_invert();
 			}
-			catch(KMat::SingularMatrixInvertionException d)
+			catch(KMath::KMat::SingularMatrixInvertionException d)
 			{
 				continue;
 			}
@@ -972,10 +1003,10 @@ vector<vector<float> > NAOKinematics::inverseLeftLeg(float px, float py, float p
 	return returnResult;
 }
 
-vector<vector<float> > NAOKinematics::inverseRightLeg(float px, float py, float pz, float rx, float ry, float rz)
+std::vector<std::vector<float> > NAOKinematics::inverseRightLeg(float px, float py, float pz, float rx, float ry, float rz)
 {
 	std::vector<float> frl, empty;
-	std::vector<vector<float> > returnResult;
+	std::vector<std::vector<float> > returnResult;
 	KMatTransf::makeTransformation(T, px, py, pz, rx, ry, rz);
 	Tinit = T;
 	//Move the start point to the hipyawpitch point
@@ -1021,7 +1052,7 @@ vector<vector<float> > NAOKinematics::inverseRightLeg(float px, float py, float 
 		TtempTheta5 = Tstart;
 		TtempTheta5.fast_invert();
 	}
-	catch(KMat::SingularMatrixInvertionException d)
+	catch(KMath::KMat::SingularMatrixInvertionException d)
 	{
 		return returnResult;
 	}
@@ -1061,7 +1092,7 @@ vector<vector<float> > NAOKinematics::inverseRightLeg(float px, float py, float 
 			{
 				Ttemp.fast_invert();
 			}
-			catch(KMat::SingularMatrixInvertionException d)
+			catch(KMath::KMat::SingularMatrixInvertionException d)
 			{
 				continue;
 			}
@@ -1144,4 +1175,4 @@ vector<vector<float> > NAOKinematics::inverseRightLeg(float px, float py, float 
 
 	return returnResult;
 }
-#endif
+

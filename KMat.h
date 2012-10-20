@@ -34,6 +34,7 @@
  *
  * @author vosk
  * */
+namespace KMath {
 namespace KMat
 {
 	using std::runtime_error;
@@ -623,15 +624,15 @@ namespace KMat
 			D<T, N, M> ngen;
 
 			if(h == NULL)
-				return static_cast< D<T, M, N> &> (*this);
+				return ngen;
 
-			ngen.makeExclusive();
+			ngen.getHandle();
 
 			for (unsigned i = 0; i < M; i++)
 			{
 				for (unsigned j = 0; j < N; j++)
 				{
-					ngen.h->data[j][i] = h->data[i][j];
+					ngen(j,i) =h->data(i, j);
 				}
 			}
 
@@ -905,6 +906,8 @@ namespace KMat
 		throw SingularMatrixInvertionException(d);
 	};
 
+
+
 	//Partial specialization for square matrices
 	template<typename T, unsigned S> class GenMatrix<T, S, S> : public BaseMatrix<GenMatrix, T, S, S>
 	{
@@ -950,6 +953,8 @@ namespace KMat
 	};
 
 
+
+
 	template <typename T> class GenMatrix<T, 1, 1> : public BaseMatrix<GenMatrix, T, 1, 1>
 	{
 		//Add single dimentionall acess operator
@@ -970,6 +975,8 @@ namespace KMat
 		{
 			return read(i, 0);
 		};
+		operator T () const{return read(0, 0);};
+
 	};
 
 	template <typename T> class GenMatrix<T, 2, 1> : public BaseMatrix<GenMatrix, T, 2, 1>
@@ -1142,6 +1149,7 @@ namespace KMat
 
 		ATMatrix<T, S> & fast_invert()
 		{
+			//It could be just the transpose, but only if A is a rotation... so there...
 			if (AisIdentity != true)
 				A.fast_invert();
 
@@ -1437,11 +1445,13 @@ namespace KMat
 
 };
 
+};
+
 //Short Definitions :)
-typedef KMat::Vector<float, 2>::type KVecFloat2;
-typedef KMat::Vector<float, 3>::type KVecFloat3;
-typedef KMat::Vector<int, 2>::type KVecInt2;
-typedef KMat::Vector<int, 3>::type KVecInt3;
+typedef KMath::KMat::Vector<float, 2>::type KVecFloat2;
+typedef KMath::KMat::Vector<float, 3>::type KVecFloat3;
+typedef KMath::KMat::Vector<int, 2>::type KVecInt2;
+typedef KMath::KMat::Vector<int, 3>::type KVecInt3;
 
 
 #endif
