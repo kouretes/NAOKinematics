@@ -41,7 +41,16 @@ int main(){
 	
 	vector<vector<float> > result;
 
+	result = nkin->inverseLeftHand(output1.pointX,output1.pointY,output1.pointZ,output1.angleX,output1.angleY,output1.angleZ);
+	if(!result.empty())
+		cout << "Solution exists " << endl;
+	result = nkin->inverseRightHand(output2.pointX,output2.pointY,output2.pointZ,output2.angleX,output2.angleY,output2.angleZ);
+	if(!result.empty())
+		cout << "Solution exists " << endl;
 	result = nkin->inverseLeftLeg(output3.pointX,output3.pointY,output3.pointZ,output3.angleX,output3.angleY,output3.angleZ);
+	if(!result.empty())
+		cout << "Solution exists " << endl;
+	result = nkin->inverseRightLeg(output4.pointX,output4.pointY,output4.pointZ,output4.angleX,output4.angleY,output4.angleZ);
 	if(!result.empty())
 		cout << "Solution exists " << endl;
 	return 0;
