@@ -84,7 +84,7 @@ private:
 public:
 	NAOKinematics()
 	{
-		PI = KMatTransf::PI;
+		PI = M_PI;
 		KMatTransf::makeTranslation(TBaseHead, 0.0f, 0.0f, NeckOffsetZ);
 		KMatTransf::makeRotationXYZ(RotHead, PI / 2, PI / 2, 0.0f);
 		KMatTransf::makeTranslation(TEndHead1, CameraBotomX, 0.0f, CameraBotomZ);
@@ -130,7 +130,7 @@ public:
 		KMatTransf::makeRotationXYZ(RotLLhipR, 0.0f, PI/2, 0.0f);
 		KMatTransf::makeRotationXYZ(RotLLallPitchs, 0.0f, PI/2, PI/2);
 		//Right leg
-		KMatTransf::makeRotationXYZ(RotRLhipYP, 0.0f, 3*PI/4, PI/2);
+		KMatTransf::makeRotationXYZ(RotRLhipYP, 0.0f, PI/4, PI/2);
 		KMatTransf::makeRotationXYZ(RotRLhipR, 0.0f, PI/2, 0.0f);
 		KMatTransf::makeRotationXYZ(RotRLallPitchs, 0.0f, PI/2, PI/2);
 	}

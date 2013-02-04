@@ -221,7 +221,6 @@ NAOKinematics::FKvars NAOKinematics::calculateCenterOfMass(std::vector<float> al
 {
 	kmatTable endTr1, endTr2, endTr3, endTr4, endTr5, endTr6, temp;
 	KMath::KMat::GenMatrix<float, 3, 1> lh1, lh2, lh3, lh4, rh1, rh2, rh3, rh4, ll1, ll2, ll3, ll4, ll5, ll6, rl1, rl2, rl3, rl4, rl5, rl6, h1, h2, t;
-	float PI = KMatTransf::PI;
 	
 	if(allJoints.size() != 22)
 		std::cout << "Kinematics CoM fatal: joints vector not equal to 22" << std::endl;
@@ -246,7 +245,7 @@ NAOKinematics::FKvars NAOKinematics::calculateCenterOfMass(std::vector<float> al
 	h2 = temp.get_translation();
 	h2.scalar_mult(HeadPitchMass);
 	h1 += h2;
-
+using namespace std;
 	//Left Hand
 	KMatTransf::makeTranslation(endTr1, LShoulderPitchX, LShoulderPitchY, LShoulderPitchZ);
 	KMatTransf::makeTranslation(endTr2, LShoulderRollX, LShoulderRollY, LShoulderRollZ);
@@ -288,6 +287,7 @@ NAOKinematics::FKvars NAOKinematics::calculateCenterOfMass(std::vector<float> al
 	lh1 += lh2;
 	lh1 += lh3;
 	lh1 += lh4;
+
 
 	//Left Leg
 	KMatTransf::makeTranslation(endTr1, LHipYawPitchX, LHipYawPitchY, LHipYawPitchZ);
@@ -350,7 +350,7 @@ NAOKinematics::FKvars NAOKinematics::calculateCenterOfMass(std::vector<float> al
 	ll1 += ll4;
 	ll1 += ll5;
 	ll1 += ll6;
-
+	
 	//Right Leg
 	KMatTransf::makeTranslation(endTr1, RHipYawPitchX, RHipYawPitchY, RHipYawPitchZ);
 	KMatTransf::makeTranslation(endTr2, RHipRollX, RHipRollY, RHipRollZ);
@@ -418,7 +418,7 @@ NAOKinematics::FKvars NAOKinematics::calculateCenterOfMass(std::vector<float> al
 	KMatTransf::makeTranslation(endTr2, RShoulderRollX, RShoulderRollY, RShoulderRollZ);
 	KMatTransf::makeTranslation(endTr3, RElbowYawX, RElbowYawY, RElbowYawZ);
 	KMatTransf::makeTranslation(endTr4, RElbowRollX, RElbowRollY, RElbowRollZ);
-	KMatTransf::makeTranslation(base, 0.0f, -(ShoulderOffsetY + ElbowOffsetY), allJoints.front());
+	KMatTransf::makeTranslation(base, 0.0f, -(ShoulderOffsetY + ElbowOffsetY), ShoulderOffsetZ);
 	KMatTransf::makeDHTransformation(T1, 0.0f, -PI / 2, 0.0f, allJoints.front());
 	allJoints.erase(allJoints.begin());
 	KMatTransf::makeDHTransformation(T2, 0.0f, PI / 2, 0.0f, allJoints.front() + PI / 2);
@@ -447,6 +447,7 @@ NAOKinematics::FKvars NAOKinematics::calculateCenterOfMass(std::vector<float> al
 	rh3.scalar_mult(RElbowYawMass);
 	base *= T4;
 	temp = base;
+	//temp *= RotLArm;
 	temp *= RotRHelbowR;
 	temp *= endTr4;
 	rh4 = temp.get_translation();
