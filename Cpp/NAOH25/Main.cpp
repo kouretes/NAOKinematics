@@ -7,15 +7,15 @@ int main(){
 	NAOKinematics *nkin = new NAOKinematics();
 
 	NAOKinematics::FKvars output1, output2, output3, output4, output5;
-	std::vector<float> flh,frh,fll,frl,fc,empty;
-	float pi = KMath::KMat::transformations::PI;
-	
+	std::vector<double> flh,frh,fll,frl,fc,empty;
+	double pi = KMath::KMat::transformations::PI;
+
 	//Left Hand
-	flh.push_back(pi/2);flh.push_back(0);flh.push_back(0);flh.push_back(-0.04);
+	flh.push_back(0);flh.push_back(pi/4);flh.push_back(-pi/3);flh.push_back(-pi/4);flh.push_back(pi/4);
 	output1 = nkin->filterForwardFromTo("Torso","LeftArm",empty,flh);
 	
 	//Right Hand
-	frh.push_back(pi/2);frh.push_back(0);frh.push_back(0);frh.push_back(0.9);
+	frh.push_back(0);frh.push_back(-pi/4);frh.push_back(-pi/3);frh.push_back(pi/4);frh.push_back(pi/4);
 	output2 = nkin->filterForwardFromTo("Torso","RightArm",empty,frh);
 	
 	//Left Leg
@@ -34,24 +34,23 @@ int main(){
 	std::cout << "x = " << output2.pointX << " y = " << output2.pointY << " z = " << output2.pointZ << " ax = " << output2.angleX << " ay = " << output2.angleY << " az = " << output2.angleZ << std::endl;
 	std::cout << "x = " << output3.pointX << " y = " << output3.pointY << " z = " << output3.pointZ  << " ax = " << output3.angleX << " ay = " << output3.angleY << " az = " << output3.angleZ << std::endl;
 	std::cout << "x = " << output4.pointX << " y = " << output4.pointY << " z = " << output4.pointZ << " ax = " << output4.angleX << " ay = " << output4.angleY << " az = " << output4.angleZ << std::endl;
-	
-	std::cout << "x = " << output5.pointX << " y = " << output5.pointY << " z = " << output5.pointZ << " angleZ " << output4.angleZ << " angleY " << output4.angleY << " angleX " << output4.angleX << std::endl;
-	
+	std::cout << "x = " << output5.pointX << " y = " << output5.pointY << " z = " << output5.pointZ << " ax = " << output5.angleX << " ay = " << output5.angleY << " az = " << output5.angleZ << std::endl;
 	
 	
-	vector<vector<float> > result;
+	
+	vector<vector<double> > result;
 
 	result = nkin->inverseLeftHand(output1.pointX,output1.pointY,output1.pointZ,output1.angleX,output1.angleY,output1.angleZ);
 	if(!result.empty())
-		cout << "Solution exists " << endl;
+		cout << "--Solution exists 1" << endl;
 	result = nkin->inverseRightHand(output2.pointX,output2.pointY,output2.pointZ,output2.angleX,output2.angleY,output2.angleZ);
 	if(!result.empty())
-		cout << "Solution exists " << endl;
+		cout << "--Solution exists 2" << endl;
 	result = nkin->inverseLeftLeg(output3.pointX,output3.pointY,output3.pointZ,output3.angleX,output3.angleY,output3.angleZ);
 	if(!result.empty())
-		cout << "Solution exists " << endl;
+		cout << "--Solution exists 3" << endl;
 	result = nkin->inverseRightLeg(output4.pointX,output4.pointY,output4.pointZ,output4.angleX,output4.angleY,output4.angleZ);
 	if(!result.empty())
-		cout << "Solution exists " << endl;
+		cout << "--Solution exists 4" << endl;
 	return 0;
 }

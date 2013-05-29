@@ -27,7 +27,7 @@
 #define __RESTRICTED
 #endif
 /**
- * KMat (koimat`) :: Kouretes Matrix Library!
+ * KMat  :: blind 
  * Provides a templated statically binded (sounds exotic :P )
  * matrix library
  * optimized for small matrices (ie NOT optimized for large matrices)
@@ -93,6 +93,46 @@ namespace KMat
 			return p.get(i, j) *= v;
 		};
 		template<typename AT> float operator/=(AT  v)
+		{
+			return p.get(i, j) /= v;
+		};
+
+	private:
+		C & p;
+		const int i, j;
+	};
+	
+	template<typename C> class COWRef<double, C>
+	{
+		//template <typename AT, typename AC>	friend class COWRef;
+	public:
+		COWRef(C &obj, int a, int b): p(obj), i(a), j(b) {};
+		operator double() const
+		{
+			return p.read(i, j) ;
+		} ;
+		//template<typename AT,typename AC> float operator=(COWRef<AT,AC> const& v) { return p.get(i,j)=v.p.read(v.i,v.j);};
+		double operator=(COWRef<double, C>  const &v)
+		{
+			return p.get(i, j) = v.p.read(v.i, v.j);
+		};
+		double operator=(double  v)
+		{
+			return p.get(i, j) = v;
+		};
+		template<typename AT> double operator+=(AT  v)
+		{
+			return p.get(i, j) += v;
+		};
+		template<typename AT> double operator-=(AT  v)
+		{
+			return p.get(i, j) -= v;
+		};
+		template<typename AT> double operator*=(AT  v)
+		{
+			return p.get(i, j) *= v;
+		};
+		template<typename AT> double operator/=(AT  v)
 		{
 			return p.get(i, j) /= v;
 		};
@@ -1190,7 +1230,7 @@ namespace KMat
 			rs = rs > 0 ? rs : -rs;
 			//std::cout<<rs<<std::endl;
 			//std::cout<<std::numeric_limits<T>::epsilon()<<std::endl;
-			return rs < (std::numeric_limits<T>::epsilon() * 10e1);
+			return rs < (std::numeric_limits<T>::epsilon() * 10e6);
 		}
 
 		ATMatrix<T, S>& identity()
@@ -1422,7 +1462,7 @@ namespace KMat
 		}
 		template<typename T> static void makeRotationXYZ(ATMatrix<T, 4> & Rot, T xAngle, T yAngle, T zAngle)
 		{
-			ATMatrix<float, 4> Rx, Ry, Rz;
+			ATMatrix<T, 4> Rx, Ry, Rz;
 			makeRotationX(Rx, xAngle);
 			makeRotationY(Ry, yAngle);
 			makeRotationZ(Rz, zAngle);
@@ -1432,7 +1472,7 @@ namespace KMat
 		}
 		template<typename T> static void makeRotationZYX(ATMatrix<T, 4> & Rot, T zAngle, T yAngle, T xAngle)
 		{
-			ATMatrix<float, 4> Rx, Ry, Rz;
+			ATMatrix<T, 4> Rx, Ry, Rz;
 			makeRotationX(Rx, xAngle);
 			makeRotationY(Ry, yAngle);
 			makeRotationZ(Rz, zAngle);
