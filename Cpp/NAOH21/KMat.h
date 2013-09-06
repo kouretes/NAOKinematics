@@ -27,7 +27,7 @@
 #define __RESTRICTED
 #endif
 /**
- * KMat  :: blind 
+ * KMat (koimat`) :: Kouretes Matrix Library!
  * Provides a templated statically binded (sounds exotic :P )
  * matrix library
  * optimized for small matrices (ie NOT optimized for large matrices)
@@ -51,15 +51,19 @@ namespace KMat
 
 	template<typename T, typename C> class COWRef
 	{
-		/*public:
-		 COWRef(C obj,int a, int b): p(obj),i(a),j(b){};
+		public:
+		 COWRef(C &obj,int a, int b): p(obj),i(a),j(b){};
 		 //const AT& operator(){ return p.getFunc(i,j) ;} const;
-		 T& operator=(T const v) { return  p.get(i,j)=v;};
+		 T& operator=(T const  v) {return  p.get(i,j)=v;};
 		 T& operator=(COWRef<T,C>  const &v) { return p.get(i,j)=v.p.read(v.i,v.j);};
 		 template<typename AT,typename AC> T operator=(COWRef<AT,AC> const& v) { return p.get(i,j)=v.p.read(v.i,v.j);};
+		 operator T() const
+		 {
+		 	return p.read(i,j);
+		 }
 		 private:
 		 C & p;
-		 int i,j;*/
+		 int i,j;
 	};
 
 	template<typename C> class COWRef<float, C>
@@ -222,11 +226,11 @@ namespace KMat
 		template <template<typename , unsigned , unsigned > class	D, typename T, unsigned M, unsigned N>
 		friend class BaseMatrix;
 
-		inline AT & data(unsigned i, unsigned  UNUSED(j) )
+		inline AT & data(unsigned UNUSED(i), unsigned  UNUSED(j) )
 		{
 			return x;
 		};
-		inline AT * data(unsigned i)
+		inline AT * data(unsigned UNUSED(i))
 		{
 			return &x;
 		};
@@ -470,6 +474,28 @@ namespace KMat
 
 			return static_cast< D<T, M, N> &> (*this);
 		};
+
+
+		/**
+		 *	Swap columns of matrix
+		 **/
+		D<T, M, N>& column_swap( unsigned k, unsigned l)
+		{
+			if(h == NULL)
+				return static_cast< D<T, M, N> &> (*this);
+
+			RefHandle<DataContainer<T, M, N> >::getHandle();
+
+			for (unsigned i = 0; i < M; i++)
+			{
+				T temp=h->data(i,k);
+				h->data(i,k)=h->data(i,l);
+				h->data(i,l)=temp;
+
+			}
+
+			return static_cast< D<T, M, N> &> (*this);
+		};
 		/**
 		 *	In place add another matrix to this, row wise add
 		 **/
@@ -486,6 +512,29 @@ namespace KMat
 
 			return static_cast< D<T, M, N> &> (*this);
 		};
+
+		/**
+		 *	Swap rows of matrix
+		 **/
+		D<T, M, N>& row_swap( unsigned k, unsigned l)
+		{
+			if(h == NULL )
+				return static_cast< D<T, M, N> &> (*this);
+
+			RefHandle<DataContainer<T, M, N> >::getHandle();
+
+			for (unsigned i = 0; i <  N; i++)
+			{
+				T temp=h->data(k,i);
+				h->data(k,i)=h->data(l,i);
+				h->data(l,i)=temp;
+
+			}
+
+			return static_cast< D<T, M, N> &> (*this);
+		};
+
+
 		/**
 		 * In place subtract another matrix to this
 		 **/
@@ -792,7 +841,7 @@ namespace KMat
 				{
 					//cout.width(7);
 					//cout.precision(2);
-					cout << setw(7) << setprecision(2) << fixed << h->data(i, j) << ""; //setprecision(3)<<setw(6)<<
+					cout << setw(11) << setprecision(6) << fixed << h->data(i, j) << ""; //setprecision(3)<<setw(6)<<
 				}
 
 				cout << "|" << endl;
@@ -802,7 +851,7 @@ namespace KMat
 			cout << "+";
 
 			for (unsigned i = 0; i < N; i++)
-				cout << "   -   ";
+				cout << "     -     ";
 
 			cout << "+" << endl;
 			return static_cast< D<T, M, N> const &> (*this);
@@ -865,6 +914,7 @@ namespace KMat
 	//GenMatix: simply a BaseMatrix Instantation :)
 	template <typename T, unsigned M, unsigned N>class GenMatrix: public BaseMatrix<GenMatrix, T, M, N>
 {};
+
 	//========================================Square matrices====================================
 	//Transpose for square matrices
 	template <typename A, unsigned S>
@@ -882,71 +932,9 @@ namespace KMat
 
 		return athis;
 	};
-
-	// Matrix inversion	function -- TODO: Implement :P
+	//invert function declaration, used below as friend
 	template <typename A, unsigned S>
-	GenMatrix<A, S, S> & invert_square_matrix(GenMatrix<A, S, S> & athis)
-	{
-		std::string d("KMat:invert_square_matrix<T,S,S>() ");
-		throw SingularMatrixInvertionException(d);
-	};
-	template <typename A>
-	GenMatrix<A, 2, 2> & invert_square_matrix(GenMatrix<A, 2, 2> & athis)
-	{
-		//using BaseMatrix<typename GenMatrix,2,2>::data;
-		A determ = athis.read(0, 0) * athis.read(1, 1) - athis.read(0, 1) * athis.read(1, 0);
-
-		//std::cout<<"Det:"<<determ<<std::endl;
-		//std::cout<<"Eps:"<<std::numeric_limits<T>::epsilon()<<std::endl;
-		if (determ > std::numeric_limits<A>::epsilon() && determ != (A)0) //can invert
-		{
-			A temp1 = athis.read(0, 0);
-			athis.get(0, 0) = athis.read(1, 1) / determ;
-			athis.get(1, 1) = temp1 / determ;
-			A temp2 = athis.read(0, 1);
-			athis.get(0, 1) = -athis.read(1, 0) / determ;
-			athis.get(1, 0) = -temp2 / determ;
-			return athis;
-		}
-
-		std::string d("KMat::invert_square_matrixGenMatrix<A,2,2>");
-		throw SingularMatrixInvertionException(d);
-	};
-
-	template <typename A>
-	GenMatrix<A, 3, 3> & invert_square_matrix(GenMatrix<A, 3, 3> & athis)
-	{
-		//using BaseMatrix<typename GenMatrix,2,2>::data;
-		//Minor 1: based on 1,1
-		A m1 = athis.read(0, 0) * (athis.read(1, 1) * athis.read(2, 2) - athis.read(1, 2) * athis.read(2, 1));
-		//Minor 2: based on 1,2
-		A m2 = athis.read(0, 1) * (athis.read(1, 0) * athis.read(2, 2) - athis.read(2, 0) * athis.read(1, 2));
-		//Minor 2: based on 1,3
-		A m3 = athis.read(0, 2) * (athis.read(1, 0) * athis.read(2, 1) - athis.read(2, 0) * athis.read(1, 1));
-		A determ = m1 - m2 + m3;
-
-		//std::cout<<"Det:"<<determ<<std::endl;
-		//std::cout<<"Eps:"<<std::numeric_limits<A>::epsilon()<<std::endl;
-		if (determ > std::numeric_limits<A>::epsilon() && determ != (A)0) //can invert
-		{
-			GenMatrix<A, 3, 3> t = athis.clone();
-			athis.get(0, 0) = (t.read(1, 1) * t.read(2, 2) - t.read(1, 2) * t.read(2, 1)) / determ;
-			athis.get(0, 1) = (t.read(0, 2) * t.read(2, 1) - t.read(0, 1) * t.read(2, 2)) / determ;
-			athis.get(0, 2) = (t.read(0, 1) * t.read(1, 2) - t.read(0, 2) * t.read(1, 1)) / determ;
-			athis.get(1, 0) = (t.read(1, 2) * t.read(2, 0) - t.read(1, 0) * t.read(2, 2)) / determ;
-			athis.get(1, 1) = (t.read(0, 0) * t.read(2, 2) - t.read(0, 2) * t.read(2, 0)) / determ;
-			athis.get(1, 2) = (t.read(0, 2) * t.read(1, 0) - t.read(0, 0) * t.read(1, 2)) / determ;
-			athis.get(2, 0) = (t.read(1, 0) * t.read(2, 1) - t.read(1, 1) * t.read(2, 0)) / determ;
-			athis.get(2, 1) = (t.read(0, 1) * t.read(2, 0) - t.read(0, 0) * t.read(2, 1)) / determ;
-			athis.get(2, 2) = (t.read(0, 0) * t.read(1, 1) - t.read(0, 1) * t.read(1, 0)) / determ;
-			return athis;
-		}
-
-		std::string d("KMat::invert_square_matrixGenMatrix<A,3,3>");
-		throw SingularMatrixInvertionException(d);
-	};
-
-
+	GenMatrix<A, S, S> & invert_square_matrix(GenMatrix<A, S, S> & athis);
 
 	//Partial specialization for square matrices
 	template<typename T, unsigned S> class GenMatrix<T, S, S> : public BaseMatrix<GenMatrix, T, S, S>
@@ -1034,12 +1022,136 @@ namespace KMat
 		};
 		COWRef<T, GenMatrix<T, 2, 1> > operator() (unsigned i)
 		{
-			return COWRef<T, GenMatrix<T, 2, 1> > ( static_cast< GenMatrix<T, 2, 1>  &> (*this), i, 0);
+			return COWRef<T, GenMatrix<T, 2, 1> > (   (*this), i, 0);
 		};
 		const T operator() (unsigned i) const
 		{
 			return read(i, 0);
 		};
+	};
+
+
+
+	// Matrix inversion	function, in-place gauss-jordan elimination with partial pivoting
+	template <typename A, unsigned S>
+	GenMatrix<A, S, S> & invert_square_matrix(GenMatrix<A, S, S> & athis)
+	{
+
+		GenMatrix<unsigned int,S,1>  ipivot;
+		ipivot.zero();
+		for(unsigned k=0;k<S;k++)
+		{
+			//Find pivot
+			unsigned pvt=k;
+			A pvtmx=(athis.read(k,k)>=0?athis.read(k,k):-athis.read(k,k));
+			for (unsigned l=k+1;l<S;l++)
+			{
+				if(pvtmx<(athis(l,k)>=0?athis(l,k):-athis(l,k)))
+				{
+					pvt=l;
+					pvtmx=(athis(l,k)>=0?athis(l,k):-athis(l,k));
+				}
+			}
+			//Pivot
+			//std::cout<<pvt<<":";
+			//std::cout<<k<<std::endl;
+			ipivot(k)=pvt;
+			//ipivot.prettyPrint();
+			athis.row_swap(k,pvt);
+
+			if(athis(k,k)==0)
+			{
+				std::string d("KMat:invert_square_matrix<T,S,S>() ");
+				throw SingularMatrixInvertionException(d);
+			}
+
+			//Eliminate all other rows
+			for(unsigned j=0;j<S;j++)
+			{
+				if(j==k) continue;
+
+				A m=-athis(j,k)/athis(k,k);
+
+				for(unsigned q=0;q<S;q++)
+				{
+					athis(j,q)=athis(j,q)+m*athis(k,q);
+
+				}
+				athis(j,k)=m;
+
+			}
+			//Normalize current row
+			A m_norm=1/athis(k,k);
+			for(unsigned q=0;q<S;q++)
+			{
+				athis(k,q)=m_norm*athis(k,q);
+			}
+			athis(k,k)=m_norm;
+		}
+		//Repivot
+		//ipivot.prettyPrint();
+		for(int q=S-1;q>=0;q--)
+		{
+			athis.column_swap((unsigned)q, ipivot(q));
+		}
+
+		return athis;
+
+	};
+	template <typename A>
+	GenMatrix<A, 2, 2> & invert_square_matrix(GenMatrix<A, 2, 2> & athis)
+	{
+		//using BaseMatrix<typename GenMatrix,2,2>::data;
+		A determ = athis.read(0, 0) * athis.read(1, 1) - athis.read(0, 1) * athis.read(1, 0);
+
+		//std::cout<<"Det:"<<determ<<std::endl;
+		//std::cout<<"Eps:"<<std::numeric_limits<T>::epsilon()<<std::endl;
+		if (determ > std::numeric_limits<A>::epsilon() && determ != (A)0) //can invert
+		{
+			A temp1 = athis.read(0, 0);
+			athis.get(0, 0) = athis.read(1, 1) / determ;
+			athis.get(1, 1) = temp1 / determ;
+			A temp2 = athis.read(0, 1);
+			athis.get(0, 1) = -athis.read(1, 0) / determ;
+			athis.get(1, 0) = -temp2 / determ;
+			return athis;
+		}
+
+		std::string d("KMat::invert_square_matrixGenMatrix<A,2,2>");
+		throw SingularMatrixInvertionException(d);
+	};
+
+	template <typename A>
+	GenMatrix<A, 3, 3> & invert_square_matrix(GenMatrix<A, 3, 3> & athis)
+	{
+		//using BaseMatrix<typename GenMatrix,2,2>::data;
+		//Minor 1: based on 1,1
+		A m1 = athis.read(0, 0) * (athis.read(1, 1) * athis.read(2, 2) - athis.read(1, 2) * athis.read(2, 1));
+		//Minor 2: based on 1,2
+		A m2 = athis.read(0, 1) * (athis.read(1, 0) * athis.read(2, 2) - athis.read(2, 0) * athis.read(1, 2));
+		//Minor 2: based on 1,3
+		A m3 = athis.read(0, 2) * (athis.read(1, 0) * athis.read(2, 1) - athis.read(2, 0) * athis.read(1, 1));
+		A determ = m1 - m2 + m3;
+
+		//std::cout<<"Det:"<<determ<<std::endl;
+		//std::cout<<"Eps:"<<std::numeric_limits<A>::epsilon()<<std::endl;
+		if (determ > std::numeric_limits<A>::epsilon() && determ != (A)0) //can invert
+		{
+			GenMatrix<A, 3, 3> t = athis.clone();
+			athis.get(0, 0) = (t.read(1, 1) * t.read(2, 2) - t.read(1, 2) * t.read(2, 1)) / determ;
+			athis.get(0, 1) = (t.read(0, 2) * t.read(2, 1) - t.read(0, 1) * t.read(2, 2)) / determ;
+			athis.get(0, 2) = (t.read(0, 1) * t.read(1, 2) - t.read(0, 2) * t.read(1, 1)) / determ;
+			athis.get(1, 0) = (t.read(1, 2) * t.read(2, 0) - t.read(1, 0) * t.read(2, 2)) / determ;
+			athis.get(1, 1) = (t.read(0, 0) * t.read(2, 2) - t.read(0, 2) * t.read(2, 0)) / determ;
+			athis.get(1, 2) = (t.read(0, 2) * t.read(1, 0) - t.read(0, 0) * t.read(1, 2)) / determ;
+			athis.get(2, 0) = (t.read(1, 0) * t.read(2, 1) - t.read(1, 1) * t.read(2, 0)) / determ;
+			athis.get(2, 1) = (t.read(0, 1) * t.read(2, 0) - t.read(0, 0) * t.read(2, 1)) / determ;
+			athis.get(2, 2) = (t.read(0, 0) * t.read(1, 1) - t.read(0, 1) * t.read(1, 0)) / determ;
+			return athis;
+		}
+
+		std::string d("KMat::invert_square_matrixGenMatrix<A,3,3>");
+		throw SingularMatrixInvertionException(d);
 	};
 
 
