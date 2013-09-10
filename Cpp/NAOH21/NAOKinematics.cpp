@@ -4,9 +4,9 @@ using namespace KMath;
 void NAOKinematics::forwardLeftHand(kmatTable & EndTransf, double ShoulderPitch, double ShoulderRoll, double ElbowYaw, double ElbowRoll)
 {
 	KMatTransf::makeDHTransformation(T1, 0.0, -PI / 2, 0.0, ShoulderPitch);
-	KMatTransf::makeDHTransformation(T2, 0.0, PI / 2, 0.0, ShoulderRoll - PI / 2);
-	KMatTransf::makeDHTransformation(T3, 0.0, -PI / 2, UpperArmLength, -ElbowYaw);
-	KMatTransf::makeDHTransformation(T4, 0.0, PI / 2, 0.0, ElbowRoll);
+	KMatTransf::makeDHTransformation(T2, 0.0, PI / 2, 0.0, ShoulderRoll + PI / 2);
+	KMatTransf::makeDHTransformation(T3, ElbowOffsetY, PI / 2, UpperArmLength, ElbowYaw);
+	KMatTransf::makeDHTransformation(T4, 0.0, -PI / 2, 0.0, ElbowRoll);
 	Tend = TBaseLArm;
 	Tend *= T1;
 	Tend *= T2;
@@ -22,8 +22,8 @@ void NAOKinematics::forwardRightHand(kmatTable & EndTransf, double ShoulderPitch
 {
 	KMatTransf::makeDHTransformation(T1, 0.0, -PI / 2, 0.0, ShoulderPitch);
 	KMatTransf::makeDHTransformation(T2, 0.0, PI / 2, 0.0, ShoulderRoll + PI / 2); //Allagh apo matlab
-	KMatTransf::makeDHTransformation(T3, 0.0, -PI / 2, -UpperArmLength, ElbowYaw);
-	KMatTransf::makeDHTransformation(T4, 0.0, PI / 2, 0.0, ElbowRoll); //Allagh apo matlab
+	KMatTransf::makeDHTransformation(T3, -ElbowOffsetY, PI / 2, UpperArmLength, ElbowYaw);
+	KMatTransf::makeDHTransformation(T4, 0.0, -PI / 2, 0.0, ElbowRoll); //Allagh apo matlab
 	Tend = TBaseRArm;
 	Tend *= T1;
 	Tend *= T2;
@@ -31,7 +31,6 @@ void NAOKinematics::forwardRightHand(kmatTable & EndTransf, double ShoulderPitch
 	Tend *= T4;
 	Tend *= RotRArm;
 	Tend *= TEndRArm;
-	Tend *= RotRArmFix;
 	EndTransf = Tend;
 }
 
@@ -252,14 +251,14 @@ NAOKinematics::FKvars NAOKinematics::calculateCenterOfMass(std::vector<double> a
 	KMatTransf::makeTranslation(endTr2, LShoulderRollX, LShoulderRollY, LShoulderRollZ);
 	KMatTransf::makeTranslation(endTr3, LElbowYawX, LElbowYawY, LElbowYawZ);
 	KMatTransf::makeTranslation(endTr4, LElbowRollX, LElbowRollY, LElbowRollZ);
-	KMatTransf::makeTranslation(base, 0.0, ShoulderOffsetY + ElbowOffsetY, ShoulderOffsetZ);
+	KMatTransf::makeTranslation(base, 0.0, ShoulderOffsetY , ShoulderOffsetZ);
 	KMatTransf::makeDHTransformation(T1, 0.0, -PI / 2, 0.0, allJoints.front());
 	allJoints.erase(allJoints.begin());
-	KMatTransf::makeDHTransformation(T2, 0.0, PI / 2, 0.0, allJoints.front() - PI / 2);
+	KMatTransf::makeDHTransformation(T2, 0.0, PI / 2, 0.0, allJoints.front() + PI / 2);
 	allJoints.erase(allJoints.begin());
-	KMatTransf::makeDHTransformation(T3, 0.0, -PI / 2, UpperArmLength, -allJoints.front());
+	KMatTransf::makeDHTransformation(T3, -ElbowOffsetY, PI / 2, UpperArmLength, allJoints.front());
 	allJoints.erase(allJoints.begin());
-	KMatTransf::makeDHTransformation(T4, 0.0, PI / 2, 0.0, allJoints.front());
+	KMatTransf::makeDHTransformation(T4, 0.0, -PI / 2, 0.0, allJoints.front());
 	allJoints.erase(allJoints.begin());
 	base *= T1;
 	temp = base;
@@ -419,14 +418,14 @@ NAOKinematics::FKvars NAOKinematics::calculateCenterOfMass(std::vector<double> a
 	KMatTransf::makeTranslation(endTr2, RShoulderRollX, RShoulderRollY, RShoulderRollZ);
 	KMatTransf::makeTranslation(endTr3, RElbowYawX, RElbowYawY, RElbowYawZ);
 	KMatTransf::makeTranslation(endTr4, RElbowRollX, RElbowRollY, RElbowRollZ);
-	KMatTransf::makeTranslation(base, 0.0, -(ShoulderOffsetY + ElbowOffsetY), ShoulderOffsetZ);
+	KMatTransf::makeTranslation(base, 0.0, -ShoulderOffsetY , ShoulderOffsetZ);
 	KMatTransf::makeDHTransformation(T1, 0.0, -PI / 2, 0.0, allJoints.front());
 	allJoints.erase(allJoints.begin());
 	KMatTransf::makeDHTransformation(T2, 0.0, PI / 2, 0.0, allJoints.front() + PI / 2);
 	allJoints.erase(allJoints.begin());
-	KMatTransf::makeDHTransformation(T3, 0.0, -PI / 2, -UpperArmLength, allJoints.front());
+	KMatTransf::makeDHTransformation(T3, ElbowOffsetY, PI / 2, UpperArmLength, allJoints.front());
 	allJoints.erase(allJoints.begin());
-	KMatTransf::makeDHTransformation(T4, 0.0, PI / 2, 0.0, allJoints.front());
+	KMatTransf::makeDHTransformation(T4, 0.0, -PI / 2, 0.0, allJoints.front());
 	allJoints.erase(allJoints.begin());
 	base *= T1;
 	temp = base;
@@ -587,129 +586,91 @@ std::vector<std::vector<double> > NAOKinematics::inverseLeftHand(double px, doub
 std::vector<std::vector<double> > NAOKinematics::inverseLeftHand(kmatTable targetPoint)
 {
 	std::vector<double> flh, empty;
+	kmatTable Temp;
 	std::vector<std::vector<double> > returnResult;
+	double theta1, theta2, theta3, theta4;
 	Tinit = targetPoint;
-	double startX = 0;
-	double startY = ShoulderOffsetY + ElbowOffsetY;
-	double startZ = ShoulderOffsetZ;
-	double side1 = UpperArmLength;
-	double side2 = LowerArmLength + HandOffsetX;
-	double value1 = ShoulderOffsetY + ElbowOffsetY; //113
-	double value2 = LowerArmLength + HandOffsetX; //113.7
-	double value3 = UpperArmLength; //to allo
-	//Calculate Theta 4
-	double distance = sqrt(pow(startX - Tinit(0,3), 2) + pow(startY - Tinit(1,3), 2) + pow(startZ - Tinit(2,3), 2));
-	double theta4 = PI - acos((pow(side1, 2) + pow(side2, 2) - pow(distance, 2)) / (2 * side1 * side2));
-	theta4 = - theta4;
-	if(theta4 != theta4 || theta4 > LElbowRollHigh || theta4 < LElbowRollLow)
-		return returnResult;
-	double cth4 = cos(theta4);
-	double sth4 = sin(theta4);
-	//Calculate Theta 2
-	double equationForTheta2 = Tinit(1,1);
-	double upForTheta2 = T(1,3) - value1 - (equationForTheta2 * value2 * sth4) / cth4;
-	double downForTheta2 = value3 + value2 * cth4 + value2 * pow(sth4, 2) / cth4;
-	double theta2temp = acos(upForTheta2 / downForTheta2);
-	for(int i = 0; i < 2; i++)
-	{
-		double theta2 = theta2temp;
-
-		if(i == 0 && (theta2 + PI / 2 > LShoulderRollHigh || theta2 + PI / 2 < LShoulderRollLow))
-			continue;
-		else if(i == 1 && (-theta2 + PI / 2 > LShoulderRollHigh || -theta2 + PI / 2 < LShoulderRollLow))
-			continue;
-		else if(i == 0)
-			theta2 = theta2 + PI / 2;
-		else
-			theta2 = -theta2 + PI / 2;
-
-		//Calculate Theta 3
-		double equationForTheta3 = Tinit(1,2);
-		double upForTheta3 = equationForTheta3;
-		double downForTheta3 = sin(theta2 - PI / 2);
-		double theta3temp = asin(upForTheta3 / downForTheta3);		
-
-		if(theta3temp != theta3temp && upForTheta3 / downForTheta3 < 0)
-			theta3temp = -PI / 2;
-		else if(theta3temp != theta3temp)
-			theta3temp = PI / 2;
-		
-		double posOrNegPI = (theta3temp >= 0) ? PI : -PI;
-
-		for(int j = 0; j < 2; j++)
-		{
-			double theta3 = theta3temp;
-
-			if(j == 0 && (theta3 > LElbowYawHigh || theta3 < LElbowYawLow))
-				continue;
-			else if(j == 1 && (posOrNegPI - theta3 > LElbowYawHigh || posOrNegPI - theta3 < LElbowYawLow))
-				continue;
-			else if(j == 1)
-				theta3 = -(posOrNegPI - theta3);
-			else if(j == 0)
-				theta3 = -theta3;
-
-			//Calculate Theta 1
-			double equation1ForTheta1 = Tinit(0,2);
-			double equation2ForTheta1 = Tinit(2,2);
-			double theta1temp;
-
-			if(cos(-theta3) < 10e-10 && cos(-theta3) > -10e-10 && cos(theta2-PI/2) < 10e-10 && cos(theta2-PI/2) > -10e-10)
-			{
-				kmatTable temp = Tinit;
-				kmatTable temp2 = TEndLArm;
-				temp2.fast_invert();
-				temp *= temp2;
-				theta1temp = acos(temp(0,3)/value3);
-				
-				if(theta1temp != theta1temp && temp(0,3)/value3 < 0)
-					theta1temp = -PI;
-				else if(theta1temp != theta1temp)
-					theta1temp = 0;
-					
-			}else if(cos(-theta3) < 10e-10 && cos(-theta3) > -10e-10){
-				theta1temp = acos(equation1ForTheta1 / cos(theta2 - PI / 2));
-			}else{
-				double upForTheta1 = equation2ForTheta1 + equation1ForTheta1 * sin(-theta3) * cos(theta2 - PI / 2) / cos(-theta3);
-				double downForTheta1 = cos(-theta3) + pow(cos(theta2 - PI / 2), 2) * pow(sin(-theta3), 2) / cos(-theta3);
-				theta1temp = acos(upForTheta1 / downForTheta1);
-			}
-
-			for(int l = 0; l < 2; l++)
-			{
-				double theta1 = theta1temp;
-
-				if(l == 0 && (theta1 > LShoulderPitchHigh || theta1 < LShoulderPitchLow))
-					continue;
-				else if(l == 1 && (-theta1 > LShoulderPitchHigh || -theta1 < LShoulderPitchLow))
-					continue;
-				else if(l == 1)
-					theta1 = -theta1;
-
-				//---------------------------Forward validation step--------------------------------------------------------------------------------------
-				flh.clear();
-				flh.push_back(theta1);
-				flh.push_back(theta2);
-				flh.push_back(theta3);
-				flh.push_back(theta4);
-				kmatTable test;
-				filterForward(test, "LeftHand", flh);
-
-				if(test.almostEqualTo(Tinit))
-				{
-					//std::cout << "Niki!!\nTheta 1 = " << theta1 << "\nTheta 2 = " << theta2 << "\nTheta 3 = " << theta3 << "\nTheta 4 = " << theta4 << std::endl;
-					returnResult.push_back(flh);
-				}
-				else
-				{
-					//std::cout << "Hta!!\nTheta 1 = " << theta1 << " Theta 2 = " << theta2 << " Theta 3 = " << theta3 << " Theta 4 = " << theta4 << std::endl;
-				}
-
-				//------------------------------------------------------------------------------------------------------------------------------------------
-			}
-		}
+	Temp = TBaseLArm;
+	Temp.fast_invert();
+	Temp *= Tinit;
+	T = Temp;
+	Temp = TEndLArm;
+	Temp.fast_invert();
+	T *= Temp;
+	Temp = RotLArm;
+	Temp.fast_invert();
+	T *= Temp;
+	Temp = T;
+	Temp.fast_invert();
+	double theta3temp = asin(Temp(2,3)/ElbowOffsetY);
+	if(theta3temp != theta3temp && Temp(2,3)/ElbowOffsetY < 0){
+		theta3temp = -PI / 2;
+	}else if(theta3temp != theta3temp){
+		theta3temp = PI / 2;
 	}
 
+	double posOrNegPI = (theta3temp >= 0) ? PI : -PI;
+	theta3 = theta3temp;
+	for(int i = 0; i<2; i++){
+		if(i == 0 && (theta3 > LElbowYawHigh || theta3 < LElbowYawLow)){
+			continue;
+		}else if(i == 1 && (posOrNegPI - theta3 > LElbowYawHigh || posOrNegPI - theta3 < LElbowYawLow)){
+			continue;
+		}else if(i == 1){
+			theta3 = posOrNegPI - theta3;
+		}
+		if(theta3 == PI/2){
+			theta4 = acos(Temp(1,3)/UpperArmLength);
+		}else{
+			double top, bottom;
+			top = Temp(1,3)*UpperArmLength - Temp(0,3)*cos(theta3)*ElbowOffsetY;
+			bottom = UpperArmLength*UpperArmLength + ElbowOffsetY*ElbowOffsetY*cos(theta3)*cos(theta3);
+			theta4 = acos(top/bottom);
+		}
+		KMatTransf::makeDHTransformation(T3, ElbowOffsetY, PI / 2, UpperArmLength, theta3);
+		T3.fast_invert();
+		for(int j=0; j<2; j++){
+			Temp = T;
+			if(j == 0 && (theta4 > LElbowRollHigh || theta4 < LElbowRollLow)){
+				continue;
+			}else if(j == 1 && (-theta4 > LElbowRollHigh || -theta4 < LElbowRollLow)){
+				continue;
+			}else if(j == 1){
+				theta4 = -theta4;			}
+			KMatTransf::makeDHTransformation(T4, 0.0, -PI / 2, 0.0, theta4);
+			T4.fast_invert();
+			Temp *= T4;
+			Temp *= T3;
+			Temp.fast_invert();
+			theta2 = atan2(Temp(0,1),Temp(1,1)) - PI/2;
+			if(theta2 < LShoulderRollLow || theta2 > LShoulderRollHigh){
+				continue;
+			}
+			theta1 = atan2(Temp(2,0),Temp(2,2));
+			if(theta1 < LShoulderPitchLow || theta1 > LShoulderPitchHigh){
+				continue;
+			}
+			//---------------------------Forward validation step--------------------------------------------------------------------------------------
+			flh.clear();
+			flh.push_back(theta1);
+			flh.push_back(theta2);
+			flh.push_back(theta3);
+			flh.push_back(theta4);
+			kmatTable test;
+			filterForward(test, "LeftHand", flh);
+			if(test.almostEqualTo(Tinit))
+			{
+				//std::cout << "Niki!!\nTheta 1 = " << theta1 << "\nTheta 2 = " << theta2 << "\nTheta 3 = " << theta3 << "\nTheta 4 = " << theta4 << std::endl;
+				returnResult.push_back(flh);
+			}
+			else
+			{
+				//std::cout << "Htaa!!\nTheta 1 = " << theta1 << " Theta 2 = " << theta2 << " Theta 3 = " << theta3 << " Theta 4 = " << theta4 << std::endl;
+			}
+
+			//-----------------------------------------------------------------------------------------------------------------------------------------
+		}
+	}
 	return returnResult;
 }
 
@@ -722,134 +683,93 @@ std::vector<std::vector<double> > NAOKinematics::inverseRightHand(double px, dou
 std::vector<std::vector<double> > NAOKinematics::inverseRightHand(kmatTable targetPoint)
 {
 	std::vector<double> frh, empty;
+	kmatTable Temp;
 	std::vector<std::vector<double> > returnResult;
-	//Rotate input to remvoe Rfix
-	T = targetPoint;
-	Tinit = T;
-	T *= RotRArmFixInv;
-	//continue with the rotated input
-	double startX = 0;
-	double startY = -ShoulderOffsetY - ElbowOffsetY;
-	double startZ = ShoulderOffsetZ;
-	double side1 = UpperArmLength;
-	double side2 = LowerArmLength + HandOffsetX;
-	double value1 = -ShoulderOffsetY - ElbowOffsetY; //113
-	double value2 = -LowerArmLength - HandOffsetX; //113.7
-	double value3 = -UpperArmLength; //to allo
-	//Calculate Theta 4
-	double distance = sqrt(pow(startX - T(0,3), 2) + pow(startY - T(1,3), 2) + pow(startZ - T(2,3), 2));
-	double theta4 = PI - acos((pow(side1, 2) + pow(side2, 2) - pow(distance, 2)) / (2 * side1 * side2));
-	theta4 = theta4;
-
-	if(theta4 != theta4 || theta4 > RElbowRollHigh || theta4 < RElbowRollLow)
-		return returnResult;
-
-	double cth4 = cos(theta4);
-	double sth4 = sin(theta4);
-	//Calculate Theta 2
-	double equationForTheta2 = T(1,1);
-	double upForTheta2 = T(1,3) - value1 - (equationForTheta2 * value2 * sth4) / cth4;
-	double downForTheta2 = value3 + value2 * cth4 + value2 * pow(sth4, 2) / cth4;
-	double theta2temp = acos(upForTheta2 / downForTheta2);
-
-	for(int i = 0; i < 2; i++)
-	{
-		double theta2 = theta2temp;
-
-		if(i == 0 && (theta2 - PI / 2 > RShoulderRollHigh || theta2 - PI / 2 < RShoulderRollLow))
+	double theta1, theta2, theta3, theta4;
+	Tinit = targetPoint;
+	Temp = TBaseRArm;
+	Temp.fast_invert();
+	Temp *= Tinit;
+	T = Temp;
+	Temp = TEndRArm;
+	Temp.fast_invert();
+	T *= Temp;
+	Temp = RotRArm;
+	Temp.fast_invert();
+	T *= Temp;
+	Temp = T;
+	Temp.fast_invert();
+	double theta3temp = asin(Temp(2,3)/(-ElbowOffsetY));
+	if(theta3temp != theta3temp && Temp(2,3)/(-ElbowOffsetY) < 0){
+		theta3temp = -PI / 2;
+	}else if(theta3temp != theta3temp){
+		theta3temp = PI / 2;
+	}
+	double posOrNegPI = (theta3temp >= 0) ? PI : -PI;
+	theta3 = theta3temp;
+	for(int i = 0; i<2; i++){
+		if(i == 0 && (theta3 > RElbowYawHigh || theta3 < RElbowYawLow)){
 			continue;
-		else if(i == 1 && (-theta2 - PI / 2 > RShoulderRollHigh || -theta2 - PI / 2 < RShoulderRollLow))
+		}else if(i == 1 && (posOrNegPI - theta3 > RElbowYawHigh || posOrNegPI - theta3 < RElbowYawLow)){
 			continue;
-		else if(i == 0)
-			theta2 = theta2 - PI / 2;
-		else
-			theta2 = -theta2 - PI / 2;
+		}else if(i == 1){
+			theta3 = posOrNegPI - theta3;
+		}
 
-		//Calculate Theta 3
-		double equationForTheta3 = T(1,2);
-		double upForTheta3 = equationForTheta3;
-		double downForTheta3 = sin(theta2 + PI / 2);
-		double theta3temp = asin(upForTheta3 / downForTheta3);
-		
-		if(theta3temp != theta3temp && upForTheta3 / downForTheta3 < 0)
-			theta3temp = -PI / 2;
-		else if(theta3temp != theta3temp)
-			theta3temp = PI / 2;
-		
-		double posOrNegPI = (theta3temp >= 0) ? PI : -PI;
-
-		for(int j = 0; j < 2; j++)
-		{
-			double theta3 = theta3temp;
-
-			if(j == 0 && (theta3 > RElbowYawHigh || theta3 < RElbowYawLow))
+		if(theta3 == PI/2){
+			theta4 = acos(Temp(1,3)/UpperArmLength);
+		}else{
+			double top, bottom;
+			top = Temp(1,3)*UpperArmLength - Temp(0,3)*cos(theta3)*(-ElbowOffsetY);
+			bottom = UpperArmLength*UpperArmLength + (-ElbowOffsetY)*(-ElbowOffsetY)*cos(theta3)*cos(theta3);
+			theta4 = acos(top/bottom);
+		}
+		KMatTransf::makeDHTransformation(T3, (-ElbowOffsetY), PI / 2, UpperArmLength, theta3);
+		T3.fast_invert();
+		for(int j=0; j<2; j++){
+			Temp = T;
+			if(j == 0 && (theta4 > RElbowRollHigh || theta4 < RElbowRollLow)){
 				continue;
-			else if(j == 1 && (posOrNegPI - theta3 > RElbowYawHigh || posOrNegPI - theta3 < RElbowYawLow))
+			}else if(j == 1 && (-theta4 > RElbowRollHigh || -theta4 < RElbowRollLow)){
 				continue;
-			else if(j == 1)
-				theta3 = posOrNegPI - theta3;
-
-			//Calculate Theta 1
-			double equation1ForTheta1 = T(0,2);
-			double equation2ForTheta1 = T(2,2);
-			double theta1temp;
-
-			if(cos(theta3) < 10e-10 && cos(theta3) > -10e-10 && cos(theta2+PI/2) < 10e-10 && cos(theta2+PI/2) > -10e-10)
-			{
-				kmatTable temp = T;
-				kmatTable temp2 = TEndRArm;
-				temp2.fast_invert();
-				temp *= temp2;
-				theta1temp = acos(-temp(0,3)/value3);
-				
-				if(theta1temp != theta1temp && -temp(0,3)/value3 < 0)
-					theta1temp = -PI;
-				else if(theta1temp != theta1temp)
-					theta1temp = 0;
-			}else if(cos(theta3) < 10e-10 && cos(theta3) > -10e-10){
-				theta1temp = acos(equation1ForTheta1 / cos(theta2 + PI / 2));
-			}else{
-				double upForTheta1 = equation2ForTheta1 + equation1ForTheta1 * sin(theta3) * cos(theta2 + PI / 2) / cos(theta3);
-				double downForTheta1 = cos(theta3) + pow(cos(theta2 + PI / 2), 2) * pow(sin(theta3), 2) / cos(theta3);
-				theta1temp = acos(upForTheta1 / downForTheta1);
+			}else if(j == 1){
+				theta4 = -theta4;
 			}
 
-			for(int l = 0; l < 2; l++)
-			{
-				double theta1 = theta1temp;
-
-				if(l == 0 && (theta1 > RShoulderPitchHigh || theta1 < RShoulderPitchLow))
-					continue;
-				else if(l == 1 && (-theta1 > RShoulderPitchHigh || -theta1 < RShoulderPitchLow))
-					continue;
-				else if(l == 1)
-					theta1 = -theta1;
-
-				//---------------------------Forward validation step--------------------------------------------------------------------------------------
-				frh.clear();
-				frh.push_back(theta1);
-				frh.push_back(theta2);
-				frh.push_back(theta3);
-				frh.push_back(theta4);
-				kmatTable test;
-				filterForward(test, "RightHand", frh);
-
-				if(test.almostEqualTo(Tinit))
-				{
-					//std::cout << "Niki!!\nTheta 1 = " << theta1 << "\nTheta 2 = " << theta2 << "\nTheta 3 = " << theta3 << "\nTheta 4 = " << theta4 << std::endl;
-					returnResult.push_back(frh);
-				}
-				else
-				{
-					//std::cout << "Htaa!!\nTheta 1 = " << theta1 << " Theta 2 = " << theta2 << " Theta 3 = " << theta3 << " Theta 4 = " << theta4 << std::endl;
-				}
-
-				//-----------------------------------------------------------------------------------------------------------------------------------------
+			KMatTransf::makeDHTransformation(T4, 0.0, -PI / 2, 0.0, theta4);
+			T4.fast_invert();
+			Temp *= T4;
+			Temp *= T3;
+			Temp.fast_invert();
+			theta2 = atan2(Temp(0,1),Temp(1,1)) - PI/2;
+			if(theta2 < RShoulderRollLow || theta2 > RShoulderRollHigh){
+				continue;
 			}
+			theta1 = atan2(Temp(2,0),Temp(2,2));
+			if(theta1 < RShoulderPitchLow || theta1 > RShoulderPitchHigh){
+				continue;
+			}
+			//---------------------------Forward validation step--------------------------------------------------------------------------------------
+			frh.clear();
+			frh.push_back(theta1);
+			frh.push_back(theta2);
+			frh.push_back(theta3);
+			frh.push_back(theta4);
+			kmatTable test;
+			filterForward(test, "RightHand", frh);
+			if(test.almostEqualTo(Tinit))
+			{
+				//std::cout << "Niki!!\nTheta 1 = " << theta1 << "\nTheta 2 = " << theta2 << "\nTheta 3 = " << theta3 << "\nTheta 4 = " << theta4 << std::endl;
+				returnResult.push_back(frh);
+			}
+			else
+			{
+				//std::cout << "Htaa!!\nTheta 1 = " << theta1 << " Theta 2 = " << theta2 << " Theta 3 = " << theta3 << " Theta 4 = " << theta4 << std::endl;
+			}
+
+			//-----------------------------------------------------------------------------------------------------------------------------------------
 		}
 	}
-
-	frh.clear();
 	return returnResult;
 }
 

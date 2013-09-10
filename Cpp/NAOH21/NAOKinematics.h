@@ -91,15 +91,16 @@ public:
 		KMatTransf::makeRotationXYZ(RotHead, PI / 2, PI / 2, 0.0);
 		KMatTransf::makeTranslation(TEndHead1, CameraBotomX, 0.0, CameraBotomZ);
 		KMatTransf::makeTranslation(TEndHead2, CameraTopX, 0.0, CameraTopZ);
-		KMatTransf::makeTranslation(TBaseLArm, 0.0, ShoulderOffsetY + ElbowOffsetY, ShoulderOffsetZ);
-		KMatTransf::makeRotationXYZ(RotLArm, 0.0, 0.0, PI / 2);
-		KMatTransf::makeTranslation(TEndLArm, HandOffsetX + LowerArmLength, 0.0, 0.0);
-		KMatTransf::makeTranslation(TBaseRArm, 0.0, -(ShoulderOffsetY + ElbowOffsetY), ShoulderOffsetZ);
-		KMatTransf::makeRotationXYZ(RotRArm, 0.0, 0.0, PI / 2);
-		KMatTransf::makeTranslation(TEndRArm, -(HandOffsetX + LowerArmLength), 0.0, 0.0);
-		KMatTransf::makeRotationXYZ(RotRArmFix, 0.0, 0.0, -PI);
-		RotRArmFixInv = RotRArmFix.fast_invert();
-		RotRArmFix.fast_invert();
+		
+		KMatTransf::makeTranslation(TBaseLArm, 0.0, ShoulderOffsetY, ShoulderOffsetZ);
+		KMatTransf::makeRotationXYZ(RotLArm, 0.0, 0.0, -PI / 2);
+		KMatTransf::makeTranslation(TEndLArm, HandOffsetX + LowerArmLength, 0.0, HandOffsetZ);
+		
+		
+		KMatTransf::makeTranslation(TBaseRArm, 0.0, ShoulderOffsetY, ShoulderOffsetZ);
+		KMatTransf::makeRotationXYZ(RotRArm, 0.0, 0.0, -PI / 2);
+		KMatTransf::makeTranslation(TEndRArm, HandOffsetX + LowerArmLength, 0.0, HandOffsetZ);
+		
 		KMatTransf::makeTranslation(TBaseLLeg, 0.0, HipOffsetY, -HipOffsetZ);
 		KMatTransf::makeRotationZYX(RotLLeg, PI, -PI / 2, 0.0);
 		KMatTransf::makeTranslation(TEndLLeg, 0.0, 0.0, -FootHeight);

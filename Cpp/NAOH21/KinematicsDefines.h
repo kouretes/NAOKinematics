@@ -8,6 +8,7 @@
 #define ShoulderOffsetZ		100.0
 #define LowerArmLength		57.75
 #define HandOffsetX			55.95
+#define HandOffsetZ			12.31
 #define HipOffsetZ			85.0
 #define HipOffsetY			50.0
 #define ThighLength			100.0
