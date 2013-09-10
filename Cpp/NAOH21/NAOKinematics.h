@@ -94,12 +94,12 @@ public:
 		
 		KMatTransf::makeTranslation(TBaseLArm, 0.0, ShoulderOffsetY, ShoulderOffsetZ);
 		KMatTransf::makeRotationXYZ(RotLArm, 0.0, 0.0, -PI / 2);
-		KMatTransf::makeTranslation(TEndLArm, HandOffsetX + LowerArmLength, 0.0, HandOffsetZ);
+		KMatTransf::makeTranslation(TEndLArm, HandOffsetX + LowerArmLength, 0.0, -HandOffsetZ);
 		
 		
 		KMatTransf::makeTranslation(TBaseRArm, 0.0, ShoulderOffsetY, ShoulderOffsetZ);
 		KMatTransf::makeRotationXYZ(RotRArm, 0.0, 0.0, -PI / 2);
-		KMatTransf::makeTranslation(TEndRArm, HandOffsetX + LowerArmLength, 0.0, HandOffsetZ);
+		KMatTransf::makeTranslation(TEndRArm, HandOffsetX + LowerArmLength, 0.0, -HandOffsetZ);
 		
 		KMatTransf::makeTranslation(TBaseLLeg, 0.0, HipOffsetY, -HipOffsetZ);
 		KMatTransf::makeRotationZYX(RotLLeg, PI, -PI / 2, 0.0);
