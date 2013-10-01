@@ -1,6 +1,7 @@
 function [] = ForwardKinematics()
 close all;
 clc;
+%% Nao kinematics for the left arm
 
 global shoulderOffsetY
 global elbowOffsetY
@@ -8,6 +9,7 @@ global upperArmLength
 global shoulderOffsetZ
 global LowerArmLength
 global HandOffsetX
+global HandOffsetZ
 global HipOffsetZ
 global HipOffsetY
 global ThighLength
@@ -19,8 +21,9 @@ shoulderOffsetY = 98;
 elbowOffsetY = 15;
 upperArmLength = 105;
 shoulderOffsetZ = 100;
-LowerArmLength = 57.75;
-HandOffsetX = 55.95;
+HandOffsetX = 57.75;
+HandOffsetZ = 12.31;
+LowerArmLength = 55.95;
 HipOffsetZ = 85; 
 HipOffsetY = 50;
 ThighLength = 100;
@@ -28,35 +31,46 @@ TibiaLength = 102.90;
 FootHeight = 45.11;
 NeckOffsetZ = 126.5;
 
+%to d einai h y apostash apo ton proigoumeno joint
+%to a einai h x apostash apo ton proigoumeno joint
+%to alpha einai h diafora gwnias Z apo to proigoumeno joint
+%to theta einai h gwnia tou joint
+
 thetasL(1) = 0;
 thetasL(2) = 0;
 thetasL(3) = 0;
-thetasL(4) = pi/2;
+thetasL(4) = pi/3;
 fLeftHand(thetasL);
+disp('-----Left---------')
+thetasL(5) = 0;
+fLeftHandH25(thetasL)
+disp('-----Left H25---------')
+
 thetasR(1) = 0;
 thetasR(2) = 0;
 thetasR(3) = 0;
-thetasR(4) = -pi/2;
+thetasR(4) = 0;
 fRightHand(thetasR);
-disp('-----Left---------')
+disp('-----Right---------')
+thetasR(5) = 0;
+fRightHandH25(thetasR);
+disp('-----Right H25---------')
 
 thetasLL(1) = 0;
-thetasLL(2) = 0;
+thetasLL(2) = pi/2;
 thetasLL(3) = 0;
-thetasLL(4) = pi/2;%pi/2;
+thetasLL(4) = 0;%pi/2;
 thetasLL(5) = 0;
-thetasLL(6) = 0
-fLeftLeg(thetasLL)
-
-disp('-----Right---------')
+thetasLL(6) = 0;
+fLeftLeg(thetasLL);
 
 thetasRL(1) = 0;
 thetasRL(2) = 0;
 thetasRL(3) = 0;
-thetasRL(4) = pi/2;%+0.00000000000001;%pi/2;
+thetasRL(4) = 0;
 thetasRL(5) = 0;
-thetasRL(6) = 0
-fRightLeg(thetasRL)
+thetasRL(6) = 0;
+fRightLeg(thetasRL);
 
 thetasC(1) = 0;
 thetasC(2) = pi/2;
@@ -72,22 +86,58 @@ global elbowOffsetY
 global LowerArmLength
 global HandOffsetX
 global upperArmLength
+global HandOffsetZ
 base = eye(4,4);
-base(2,4) = shoulderOffsetY + elbowOffsetY;
+base(2,4) = shoulderOffsetY;
 base(3,4) = shoulderOffsetZ;
 
 T1 = T(0,-pi/2,0,thetas(1));
-T2 = T(0,pi/2,0,thetas(2)-pi/2); %To -pi/02 to afinoume panta !!!
-T3 = T(0,-pi/2,upperArmLength,thetas(3));
-T4 = T(0,pi/2,0,thetas(4));
+T2 = T(0,pi/2,0,thetas(2)+pi/2);
+T3 = T(elbowOffsetY,pi/2,upperArmLength,thetas(3));
+T4 = T(0,-pi/2,0,thetas(4));
 
-R = Rofl(0,0,pi/2);
+R = Rofl(0,0,-pi/2);
 
 Tend1 = eye(4,4);
 Tend1(1,4) = HandOffsetX+LowerArmLength;
+Tend1(3,4) = -HandOffsetZ;
 Tend = R*Tend1;
-Tendend = (base*T1*T2*T3*T4*Tend)
-%Tendend= Tendend^-1
+Tendend = base*T1*T2*T3*T4*Tend;
+
+
+rotZ = atan2(Tendend(2,1),Tendend(1,1));
+rotY = atan2(-Tendend(3,1),sqrt(Tendend(3,2)^2 + Tendend(3,3)^2));
+rotX = atan2(Tendend(3,2),Tendend(3,3));
+left = [Tendend(1:3,4);rotX;rotY;rotZ];
+end
+
+%% left hand H25
+function [left] = fLeftHandH25(thetas)
+global shoulderOffsetY
+global shoulderOffsetZ
+global elbowOffsetY
+global LowerArmLength
+global HandOffsetX
+global upperArmLength
+global HandOffsetZ
+base = eye(4,4);
+base(2,4) = shoulderOffsetY;
+base(3,4) = shoulderOffsetZ;
+
+T1 = T(0,-pi/2,0,thetas(1));
+T2 = T(0,pi/2,0,thetas(2)+pi/2);
+T3 = T(elbowOffsetY,pi/2,upperArmLength,thetas(3));
+T4 = T(0,-pi/2,0,thetas(4));
+T5 = T(0,pi/2,LowerArmLength,thetas(5));
+
+R = Rofl(-pi/2,0,-pi/2);
+
+Tend1 = eye(4,4);
+Tend1(1,4) = HandOffsetX;
+Tend1(3,4) = -HandOffsetZ;
+Tend = R*Tend1;
+Tendend = (T1*T2*T3*T4*T5);
+
 rotZ = atan2(Tendend(2,1),Tendend(1,1));
 rotY = atan2(-Tendend(3,1),sqrt(Tendend(3,2)^2 + Tendend(3,3)^2));
 rotX = atan2(Tendend(3,2),Tendend(3,3));
@@ -102,20 +152,61 @@ global elbowOffsetY
 global shoulderOffsetZ
 global HandOffsetX
 global upperArmLength
+global HandOffsetZ
 base = eye(4,4);
-base(2,4) = -shoulderOffsetY - elbowOffsetY;
+base(2,4) = -shoulderOffsetY;
 base(3,4) = shoulderOffsetZ;
 
 T1 = T(0,-pi/2,0,thetas(1));
 T2 = T(0,pi/2,0,thetas(2)+pi/2); %To -pi/2 to afinoume panta !!!
-T3 = T(0,-pi/2,-upperArmLength,thetas(3));
-T4 = T(0,pi/2,0,thetas(4));
+T3 = T(-HandOffsetZ,pi/2,upperArmLength,thetas(3));
+T4 = T(0,-pi/2,0,thetas(4));
 
-R = Rofl(0,0,pi/2);
+R = Rofl(0,0,-pi/2);
 Tend1 = eye(4,4);
-Tend1(1,4) = -HandOffsetX-LowerArmLength;
+Tend1(1,4) = HandOffsetX+LowerArmLength;
+Tend1(3,4) = -HandOffsetZ;
 Tend = R*Tend1;
-Tendend = base*T1*T2*T3*T4*Tend*Rofl(0,0,-pi);
+Tendend = base*T1*T2*T3*T4*Tend;
+
+
+rotZ = atan2(Tendend(2,1),Tendend(1,1));
+rotY = atan2(-Tendend(3,1),sqrt(Tendend(3,2)^2 + Tendend(3,3)^2));
+rotX = atan2(Tendend(3,2),Tendend(3,3));
+right = [Tendend(1:3,4);rotX;rotY;rotZ];
+end
+
+%% right hand H25
+function [right] = fRightHandH25(thetas)
+global shoulderOffsetY
+global LowerArmLength
+global elbowOffsetY
+global shoulderOffsetZ
+global HandOffsetX
+global upperArmLength
+global HandOffsetZ
+base = eye(4,4);
+base(2,4) = -shoulderOffsetY;
+base(3,4) = shoulderOffsetZ;
+
+T1 = T(0,-pi/2,0,thetas(1));
+T2 = T(0,pi/2,0,thetas(2)+pi/2); %To -pi/2 to afinoume panta !!!
+T3 = T(0,-pi/2,upperArmLength,thetas(3));
+T4 = T(0,pi/2,0,thetas(4));
+T5 = T(0,-pi/2,LowerArmLength,thetas(5));
+
+R = Rofl(pi/2,0,pi/2);
+Tend1 = eye(4,4);
+Tend1(1,4) = HandOffsetX;
+Tend1(3,4) = -HandOffsetZ;
+Tend = R*Tend1;
+Tendend = base*T1*T2*T3*T4*T5*Tend*Rofl(0,0,-pi);
+
+
+Temp = eye(4,4);
+Temp(2,4) = 600;
+Tendend=Tendend*Temp;
+
 rotZ = atan2(Tendend(2,1),Tendend(1,1));
 rotY = atan2(-Tendend(3,1),sqrt(Tendend(3,2)^2 + Tendend(3,3)^2));
 rotX = atan2(Tendend(3,2),Tendend(3,3));
@@ -139,7 +230,7 @@ T3 = T(0,pi/2,0,thetas(3));
 T4 = T(-ThighLength,0,0,thetas(4));
 T5 = T(-TibiaLength,0,0,thetas(5));
 T6 = T(0,-pi/2,0,thetas(6));
-R = Rofl2(0,-pi/2,pi);
+R = Rofl2(pi,-pi/2,0);
 Tend1 = eye(4,4);
 Tend1(3,4) = -FootHeight;
 Tend = R;
@@ -172,11 +263,12 @@ T4 = T(-ThighLength,0,0,thetas(4));
 T5 = T(-TibiaLength,0,0,thetas(5));
 T6 = T(0,-pi/2,0,thetas(6));
 
-R = Rofl2(0,-pi/2,pi);%*Rofl(pi/2,0,0);
+R = Rofl2(pi,-pi/2,0);%*Rofl(pi/2,0,0);
 Tend1 = eye(4,4);
 Tend1(3,4) = -FootHeight;
 Tend = R;
-Tendend = base*T1*T2*T3*T4*T5*T6*Tend*Tend1
+Tendend = base*T1*T2*T3*T4*T5*T6*Tend*Tend1;
+
 
 rotY = atan2(-Tendend(3,1),sqrt(Tendend(3,2)^2 + Tendend(3,3)^2));
 rotZ = atan2(Tendend(2,1),Tendend(1,1));
@@ -242,7 +334,7 @@ R = [R, [0;0;0];
     [0,0,0],1];
 Ro = R;
 end
-function [Ro] = Rofl2(xAngle,yAngle,zAngle)
+function [Ro] = Rofl2(zAngle,yAngle,xAngle)
 Rx = [1,                0,          0;
     0,                cos(xAngle), -sin(xAngle);
     0,                sin(xAngle), cos(xAngle);];
