@@ -191,9 +191,9 @@ base(3,4) = shoulderOffsetZ;
 
 T1 = T(0,-pi/2,0,thetas(1));
 T2 = T(0,pi/2,0,thetas(2)+pi/2); %To -pi/2 to afinoume panta !!!
-T3 = T(0,-pi/2,upperArmLength,thetas(3));
-T4 = T(0,pi/2,0,thetas(4));
-T5 = T(0,-pi/2,LowerArmLength,thetas(5));
+T3 = T(0,pi/2,upperArmLength,thetas(3));
+T4 = T(0,-pi/2,0,thetas(4));
+T5 = T(0,pi/2,LowerArmLength,thetas(5));
 
 R = Rofl(pi/2,0,pi/2);
 Tend1 = eye(4,4);

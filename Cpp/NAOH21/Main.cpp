@@ -19,11 +19,13 @@ int main(){
 	joints[L_ARM+SHOULDER_ROLL]=M_PI_4;
 	joints[L_ARM+ELBOW_YAW]=0;
 	joints[L_ARM+ELBOW_ROLL]=0;
+	joints[L_ARM+WRIST_YAW]=0;
 	//Right Hand
 	joints[R_ARM+SHOULDER_PITCH]=M_PI_2;
 	joints[R_ARM+SHOULDER_ROLL]=-M_PI_4;
 	joints[R_ARM+ELBOW_YAW]=0;
 	joints[R_ARM+ELBOW_ROLL]=0;
+	joints[R_ARM+WRIST_YAW]=0;
 	//Left Leg
 	joints[L_LEG+HIP_YAW_PITCH]=-M_PI_4;
 	joints[L_LEG+HIP_ROLL]=0;
