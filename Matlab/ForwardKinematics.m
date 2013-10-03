@@ -39,10 +39,10 @@ NeckOffsetZ = 126.5;
 thetasL(1) = 0;
 thetasL(2) = 0;
 thetasL(3) = 0;
-thetasL(4) = pi/3;
+thetasL(4) = 0;
 fLeftHand(thetasL);
 disp('-----Left---------')
-thetasL(5) = 0;
+thetasL(5) = 0
 fLeftHandH25(thetasL)
 disp('-----Left H25---------')
 
@@ -53,7 +53,7 @@ thetasR(4) = 0;
 fRightHand(thetasR);
 disp('-----Right---------')
 thetasR(5) = 0;
-fRightHandH25(thetasR);
+fRightHandH25(thetasR)
 disp('-----Right H25---------')
 
 thetasLL(1) = 0;
@@ -67,7 +67,7 @@ fLeftLeg(thetasLL);
 thetasRL(1) = 0;
 thetasRL(2) = 0;
 thetasRL(3) = 0;
-thetasRL(4) = 0;
+thetasRL(4) = 0;%+0.00000000000001;%pi/2;
 thetasRL(5) = 0;
 thetasRL(6) = 0;
 fRightLeg(thetasRL);
@@ -136,7 +136,7 @@ Tend1 = eye(4,4);
 Tend1(1,4) = HandOffsetX;
 Tend1(3,4) = -HandOffsetZ;
 Tend = R*Tend1;
-Tendend = (T1*T2*T3*T4*T5);
+Tendend = base*T1*T2*T3*T4*T5*Tend;
 
 rotZ = atan2(Tendend(2,1),Tendend(1,1));
 rotY = atan2(-Tendend(3,1),sqrt(Tendend(3,2)^2 + Tendend(3,3)^2));
@@ -159,7 +159,7 @@ base(3,4) = shoulderOffsetZ;
 
 T1 = T(0,-pi/2,0,thetas(1));
 T2 = T(0,pi/2,0,thetas(2)+pi/2); %To -pi/2 to afinoume panta !!!
-T3 = T(-HandOffsetZ,pi/2,upperArmLength,thetas(3));
+T3 = T(-elbowOffsetY,pi/2,upperArmLength,thetas(3));
 T4 = T(0,-pi/2,0,thetas(4));
 
 R = Rofl(0,0,-pi/2);
@@ -191,21 +191,16 @@ base(3,4) = shoulderOffsetZ;
 
 T1 = T(0,-pi/2,0,thetas(1));
 T2 = T(0,pi/2,0,thetas(2)+pi/2); %To -pi/2 to afinoume panta !!!
-T3 = T(0,pi/2,upperArmLength,thetas(3));
+T3 = T(-elbowOffsetY,pi/2,upperArmLength,thetas(3));
 T4 = T(0,-pi/2,0,thetas(4));
 T5 = T(0,pi/2,LowerArmLength,thetas(5));
 
-R = Rofl(pi/2,0,pi/2);
+R = Rofl(-pi/2,0,-pi/2);
 Tend1 = eye(4,4);
 Tend1(1,4) = HandOffsetX;
 Tend1(3,4) = -HandOffsetZ;
 Tend = R*Tend1;
-Tendend = base*T1*T2*T3*T4*T5*Tend*Rofl(0,0,-pi);
-
-
-Temp = eye(4,4);
-Temp(2,4) = 600;
-Tendend=Tendend*Temp;
+Tendend = base*T1*T2*T3*T4*T5*Tend;
 
 rotZ = atan2(Tendend(2,1),Tendend(1,1));
 rotY = atan2(-Tendend(3,1),sqrt(Tendend(3,2)^2 + Tendend(3,3)^2));
