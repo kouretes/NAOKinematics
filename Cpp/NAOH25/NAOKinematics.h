@@ -38,6 +38,11 @@
 	 *			-# HeadPitch
 	 * .
  * \file NAOKinematics.h
+ 
+ This code uses a "fake" chain on the NAO robot but it equevelant to the real one.
+ There are several fixes to trasnform the "real" chain to the "fake" one and they are located at the NAOKinematics.cpp file and at the KinematicsDefines header.
+ The change is that we move the wristYaw angle immediately after the ElbowRoll but there is no difference! (see detailed report for the reason))
+ The results are THE SAME!
 */
 
 class NAOKinematics

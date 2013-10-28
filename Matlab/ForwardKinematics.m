@@ -42,8 +42,8 @@ thetasL(3) = 0;
 thetasL(4) = 0;
 fLeftHand(thetasL);
 disp('-----Left---------')
-thetasL(5) = 0
-fLeftHandH25(thetasL)
+thetasL(5) = 0;
+fLeftHandH25(thetasL);
 disp('-----Left H25---------')
 
 thetasR(1) = 0;
@@ -53,7 +53,7 @@ thetasR(4) = 0;
 fRightHand(thetasR);
 disp('-----Right---------')
 thetasR(5) = 0;
-fRightHandH25(thetasR)
+fRightHandH25(thetasR);
 disp('-----Right H25---------')
 
 thetasLL(1) = 0;
@@ -123,20 +123,31 @@ global HandOffsetZ
 base = eye(4,4);
 base(2,4) = shoulderOffsetY;
 base(3,4) = shoulderOffsetZ;
+thetas(1) = pi/3
+thetas(3) = pi/16;
+thetas(4) = -pi/4;
+thetas(5) = -pi/2
+elboff = 15;
 
 T1 = T(0,-pi/2,0,thetas(1));
 T2 = T(0,pi/2,0,thetas(2)+pi/2);
-T3 = T(elbowOffsetY,pi/2,upperArmLength,thetas(3));
+T3 = T(elboff,pi/2,upperArmLength,thetas(3));
 T4 = T(0,-pi/2,0,thetas(4));
-T5 = T(0,pi/2,LowerArmLength,thetas(5));
-
-R = Rofl(-pi/2,0,-pi/2);
-
+%% THIS is the correct but the other is equivelant
+%T5 = T(0,pi/2,LowerArmLength,thetas(5));
+%Tend1 = eye(4,4);
+%Tend1(1,4) = HandOffsetX;
+%Tend1(3,4) = -HandOffsetZ;
+%% This is to help us with the inverse kinematics, does not change ANYTHING
+%% at all.
+T5 = T(0,pi/2,0,thetas(5));
 Tend1 = eye(4,4);
-Tend1(1,4) = HandOffsetX;
+Tend1(1,4) = LowerArmLength + HandOffsetX;
 Tend1(3,4) = -HandOffsetZ;
+%end of fix
+R = Rofl(-pi/2,0,-pi/2);
 Tend = R*Tend1;
-Tendend = base*T1*T2*T3*T4*T5*Tend;
+Tendend = base*T1*T2*T3*T4*T5*Tend
 
 rotZ = atan2(Tendend(2,1),Tendend(1,1));
 rotY = atan2(-Tendend(3,1),sqrt(Tendend(3,2)^2 + Tendend(3,3)^2));
@@ -193,12 +204,20 @@ T1 = T(0,-pi/2,0,thetas(1));
 T2 = T(0,pi/2,0,thetas(2)+pi/2); %To -pi/2 to afinoume panta !!!
 T3 = T(-elbowOffsetY,pi/2,upperArmLength,thetas(3));
 T4 = T(0,-pi/2,0,thetas(4));
-T5 = T(0,pi/2,LowerArmLength,thetas(5));
+%% THIS is the correct but the other is equivelant
+%T5 = T(0,pi/2,LowerArmLength,thetas(5));
+%Tend1 = eye(4,4);
+%Tend1(1,4) = HandOffsetX;
+%Tend1(3,4) = -HandOffsetZ;
+%% This is to help us with the inverse kinematics, does not change ANYTHING
+%% at all.
+T5 = T(0,pi/2,0,thetas(5));
+Tend1 = eye(4,4);
+Tend1(1,4) = LowerArmLength + HandOffsetX;
+Tend1(3,4) = -HandOffsetZ;
+%end of fix
 
 R = Rofl(-pi/2,0,-pi/2);
-Tend1 = eye(4,4);
-Tend1(1,4) = HandOffsetX;
-Tend1(3,4) = -HandOffsetZ;
 Tend = R*Tend1;
 Tendend = base*T1*T2*T3*T4*T5*Tend;
 

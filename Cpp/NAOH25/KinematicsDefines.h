@@ -122,7 +122,7 @@
 #define RElbowRollZ			0.9
 
 #define RWristYawMass		0.18533
-#define RWristYawX			34.34
+#define RWristYawX			LowerArmLength+34.34
 #define RWristYawY			-0.88
 #define RWristYawZ			3.08
 

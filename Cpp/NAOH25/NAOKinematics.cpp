@@ -33,7 +33,10 @@ NAOKinematics::	NAOKinematics() :T(FR_SIZE),joints(FR_SIZE),coms(FR_SIZE),masses
 	//End and Base effectors
 	KMatTransf::makeTranslation(T[FR_BASE_T+CHAIN_R_ARM], 0.0, -(ShoulderOffsetY), ShoulderOffsetZ);
 	KMatTransf::makeRotationXYZ(T[FR_END_T+CHAIN_R_ARM], -PI_2, 0.0, -PI_2);
-	KMatTransf::makeTranslation(t1, HandOffsetX,0.0,HandOffsetZ );
+	//This is the correct
+	//KMatTransf::makeTranslation(t1, HandOffsetX,0.0,HandOffsetZ );
+	//THIS is the fix
+	KMatTransf::makeTranslation(t1, LowerArmLength+HandOffsetX,0.0,HandOffsetZ );
 	T[FR_END_T+CHAIN_R_ARM]*=t1;
 	
 	//CoM coordinates
@@ -237,16 +240,22 @@ bool NAOKinematics::prepareForward(KDeviceLists::ChainsNames ch)
 		KMatTransf::makeDHTransformation(T[L_ARM+SHOULDER_ROLL], 0.0, PI_2, 0.0, (double)joints[L_ARM+SHOULDER_ROLL] + PI_2);
 		KMatTransf::makeDHTransformation(T[L_ARM+ELBOW_YAW], +ElbowOffsetY, PI_2, UpperArmLength, (double)joints[L_ARM+ELBOW_YAW] );
 		KMatTransf::makeDHTransformation(T[L_ARM+ELBOW_ROLL], 0.0, -PI_2, 0.0, (double)joints[L_ARM+ELBOW_ROLL]);
-		KMatTransf::makeDHTransformation(T[L_ARM+WRIST_YAW], 0.0, PI_2, LowerArmLength, (double)joints[L_ARM+WRIST_YAW]);
+		/*Correct one BUT THE FIX does not change anythging*/
+		//KMatTransf::makeDHTransformation(T[L_ARM+WRIST_YAW], 0.0, PI_2, LowerArmLength, (double)joints[L_ARM+WRIST_YAW]);
+		/*The fix*/
+		KMatTransf::makeDHTransformation(T[L_ARM+WRIST_YAW], 0.0, PI_2, 0.0, (double)joints[L_ARM+WRIST_YAW]);
 	}
 
 	if(ch==CHAIN_R_ARM || ch==CHAINS_SIZE)
 	{
 		KMatTransf::makeDHTransformation(T[R_ARM+SHOULDER_PITCH], 0.0, -PI_2, 0.0, (double)joints[R_ARM+SHOULDER_PITCH]);
-		KMatTransf::makeDHTransformation(T[R_ARM+SHOULDER_ROLL], 0.0, PI_2, 0.0, (double)joints[R_ARM+SHOULDER_ROLL] + PI_2); //Allagh apo matlab
+		KMatTransf::makeDHTransformation(T[R_ARM+SHOULDER_ROLL], 0.0, PI_2, 0.0, (double)joints[R_ARM+SHOULDER_ROLL] + PI_2);
 		KMatTransf::makeDHTransformation(T[R_ARM+ELBOW_YAW], -ElbowOffsetY, PI_2, UpperArmLength, (double) joints[R_ARM+ELBOW_YAW]);
-		KMatTransf::makeDHTransformation(T[R_ARM+ELBOW_ROLL], 0.0, -PI_2, 0.0, (double)joints[R_ARM+ELBOW_ROLL]); //Allagh apo matlab
-		KMatTransf::makeDHTransformation(T[R_ARM+WRIST_YAW], 0.0, PI_2, LowerArmLength, (double)joints[R_ARM+WRIST_YAW]); //Allagh apo matlab
+		KMatTransf::makeDHTransformation(T[R_ARM+ELBOW_ROLL], 0.0, -PI_2, 0.0, (double)joints[R_ARM+ELBOW_ROLL]);
+		/*Correct one BUT THE FIX does not change anythging*/
+		//KMatTransf::makeDHTransformation(T[R_ARM+WRIST_YAW], 0.0, PI_2, LowerArmLength, (double)joints[R_ARM+WRIST_YAW]);
+		/*The fix*/
+		KMatTransf::makeDHTransformation(T[R_ARM+WRIST_YAW], 0.0, PI_2, 0.0, (double)joints[R_ARM+WRIST_YAW]);
 	}
 
 	if(ch==CHAIN_L_LEG || ch==CHAINS_SIZE)
@@ -262,10 +271,10 @@ bool NAOKinematics::prepareForward(KDeviceLists::ChainsNames ch)
 	if(ch==CHAIN_R_LEG || ch==CHAINS_SIZE)
 	{
 		KMatTransf::makeDHTransformation(T[R_LEG+HIP_YAW_PITCH], 0.0, -PI_2 / 2, 0.0,(double) joints[R_LEG+HIP_YAW_PITCH] - PI_2);
-		KMatTransf::makeDHTransformation(T[R_LEG+HIP_ROLL], 0.0, -PI_2, 0.0,(double) joints[R_LEG+HIP_ROLL] - PI_2 / 2); //allagh
+		KMatTransf::makeDHTransformation(T[R_LEG+HIP_ROLL], 0.0, -PI_2, 0.0,(double) joints[R_LEG+HIP_ROLL] - PI_2 / 2);
 		KMatTransf::makeDHTransformation(T[R_LEG+HIP_PITCH], 0.0, PI_2, 0.0, (double)joints[R_LEG+HIP_PITCH]);
 		KMatTransf::makeDHTransformation(T[R_LEG+KNEE_PITCH], -ThighLength, 0.0, 0.0,(double) joints[R_LEG+KNEE_PITCH]);
-		KMatTransf::makeDHTransformation(T[R_LEG+ANKLE_PITCH], -TibiaLength, 0.0, 0.0, (double)joints[R_LEG+ANKLE_PITCH]); //allagh
+		KMatTransf::makeDHTransformation(T[R_LEG+ANKLE_PITCH], -TibiaLength, 0.0, 0.0, (double)joints[R_LEG+ANKLE_PITCH]);
 		KMatTransf::makeDHTransformation(T[R_LEG+ANKLE_ROLL], 0.0, -PI_2, 0.0,  (double)joints[R_LEG+ANKLE_ROLL]);
 	}
 
@@ -512,121 +521,101 @@ NAOKinematics::AngleContainer NAOKinematics::inverseLeftHand(const FKvars s)
 
 NAOKinematics::AngleContainer NAOKinematics::inverseLeftHand(kmatTable targetPoint)
 {
-	kmatTable Temp,T3,T4,Tinit,Torig;
+	kmatTable Temp,T1,T2,T3,Tinit,Torig;
 	std::vector<std::vector<float> > returnResult;
-	return returnResult;
-	/*double theta1, theta2, theta3, theta4;
+	double theta1, theta2, theta3, theta4, theta5;
 	Tinit = targetPoint;
 	Tinit.fast_invert();
 	Temp = T[FR_END_T+CHAIN_L_ARM];
 	Temp*=Tinit;
-	Temp *= T[FR_BASE_T+CHAIN_L_ARM];
-	Torig=Temp;
+	Temp*=T[FR_BASE_T+CHAIN_L_ARM];
 	try
 	{
-		Torig.fast_invert();
+		Temp.fast_invert();
 	}
 	catch(KMath::KMat::SingularMatrixInvertionException d)
 	{
 		return returnResult;
 	}
-	double theta3temp = asin(Temp(2,3)/ElbowOffsetY);
-	if(theta3temp != theta3temp && Temp(2,3)/ElbowOffsetY < 0){
-		theta3temp = -PI / 2;
-	}else if(theta3temp != theta3temp){
-		theta3temp = PI / 2;
+	theta1 = atan2(-Temp(2,3),Temp(0,3));
+	if(theta1 > LShoulderPitchHigh || theta1 < LShoulderPitchLow)
+		return returnResult;
+	
+	KMatTransf::makeDHTransformation(T1, 0.0, -PI_2, 0.0,  theta1);
+	try
+	{
+		T1.fast_invert();
 	}
+	catch(KMath::KMat::SingularMatrixInvertionException d)
+	{
+		return returnResult;
+	}
+	T1 *= Temp;
+	Temp = T1;
+	
+	double top, bottom;
+	top = Temp(0,3)*ElbowOffsetY/UpperArmLength -Temp(2,3);
+	bottom = ElbowOffsetY*ElbowOffsetY/UpperArmLength + UpperArmLength;
+	double theta2temp = acos(top/bottom);
 
-	double posOrNegPI = (theta3temp >= 0) ? PI : -PI;
-	theta3 = theta3temp;
-	for(int i = 0; i<2; i++){
-		if(i == 0 && (theta3 > LElbowYawHigh || theta3 < LElbowYawLow)){
+	for(int i=0; i<2; i++){
+		if(i == 0 && (theta2temp-PI_2 > LShoulderRollHigh || theta2temp-PI_2 < LShoulderRollLow)){
 			continue;
-		}else if(i == 1 && (posOrNegPI - theta3 > LElbowYawHigh || posOrNegPI - theta3 < LElbowYawLow)){
+		}else if(i == 1 && (-theta2temp-PI_2 > LShoulderRollHigh || -theta2temp-PI_2 < LShoulderRollLow)){
 			continue;
 		}else if(i == 1){
-			theta3 = posOrNegPI - theta3;
+			theta2temp = -theta2temp;
 		}
-		if(theta3 == PI/2){
-			theta4 = acos(Temp(1,3)/UpperArmLength);
-		}else{
-			double top, bottom;
-			top = Temp(1,3)*UpperArmLength - Temp(0,3)*cos(theta3)*ElbowOffsetY;
-			bottom = UpperArmLength*UpperArmLength + ElbowOffsetY*ElbowOffsetY*cos(theta3)*cos(theta3);
-			theta4 = acos(top/bottom);
+		theta2 = theta2temp-PI_2;
+		KMatTransf::makeDHTransformation(T2, 0.0, PI_2, 0.0, theta2 + PI_2);
+		try
+		{
+			T2.fast_invert();
 		}
-		KMatTransf::makeDHTransformation(T3, ElbowOffsetY, PI / 2, UpperArmLength,  theta3);
+		catch(KMath::KMat::SingularMatrixInvertionException d)
+		{
+			return returnResult;
+		}
+		T2*=Temp;
+		theta3 = atan2(-T2(2,2),-T2(0,2));
+		KMatTransf::makeDHTransformation(T3, +ElbowOffsetY, PI_2, UpperArmLength, theta3);
 		try
 		{
 			T3.fast_invert();
 		}
 		catch(KMath::KMat::SingularMatrixInvertionException d)
 		{
-			continue;
+			return returnResult;
 		}
-
-		for(int j=0; j<2; j++){
-			Temp = Torig;
-			if(j == 0 && (theta4 > LElbowRollHigh || theta4 < LElbowRollLow)){
-				continue;
-			}else if(j == 1 && (-theta4 > LElbowRollHigh || -theta4 < LElbowRollLow)){
-				continue;
-			}else if(j == 1){
-				theta4 = -theta4;			}
-			KMatTransf::makeDHTransformation(T4, 0.0, -PI / 2, 0.0,  theta4);
-
-			try
-			{
-				T4.fast_invert();
-			}
-			catch(KMath::KMat::SingularMatrixInvertionException d)
-			{
-				continue;
-			}
-			Temp *= T4;
-			Temp *= T3;
-
-			try
-			{
-				Temp.fast_invert();
-			}
-			catch(KMath::KMat::SingularMatrixInvertionException d)
-			{
-				continue;
-			}
-			theta2 = atan2(Temp(0,1),Temp(1,1)) - PI/2;
-			if(theta2 < LShoulderRollLow || theta2 > LShoulderRollHigh){
-				continue;
-			}
-			theta1 = atan2(Temp(2,0),Temp(2,2));
-			if(theta1 < LShoulderPitchLow || theta1 > LShoulderPitchHigh){
-				continue;
-			}
-			//---------------------------Forward validation step--------------------------------------------------------------------------------------
-			joints[L_ARM+SHOULDER_PITCH]=theta1;
-			joints[L_ARM+SHOULDER_ROLL]=theta2;
-			joints[L_ARM+ELBOW_YAW]=theta3;
-			joints[L_ARM+ELBOW_ROLL]=theta4;
-			prepareForward(CHAIN_L_ARM);
-			kmatTable test=getForwardEffector((Effectors)CHAIN_L_ARM);
-			if(test.almostEqualTo(targetPoint))
-			{
-				std::vector<float> r(ARM_SIZE);
-				r[SHOULDER_PITCH]=theta1;
-				r[SHOULDER_ROLL]=theta2;
-				r[ELBOW_YAW]=theta3;
-				r[ELBOW_ROLL]=theta4;
-				//std::cout << "Niki!!\nTheta 1 = " << theta1 << "\nTheta 2 = " << theta2 << "\nTheta 3 = " << theta3 << "\nTheta 4 = " << theta4 << std::endl;
-				returnResult.push_back(r);
-			}
-			else
-			{
-				//std::cout << "Htta!!\nTheta 1 = " << theta1 << "\nTheta 2 = " << theta2 << "\nTheta 3 = " << theta3 << "\nTheta 4 = " << theta4 << std::endl;
-			}
-			//-----------------------------------------------------------------------------------------------------------------------------------------
+		T3*=T2;
+		theta4 = atan2(T3(0,2),T3(2,2));
+		theta5 = atan2(T3(1,0),T3(1,1));
+		//---------------------------Forward validation step--------------------------------------------------------------------------------------
+		joints[L_ARM+SHOULDER_PITCH]=theta1;
+		joints[L_ARM+SHOULDER_ROLL]=theta2;
+		joints[L_ARM+ELBOW_YAW]=theta3;
+		joints[L_ARM+ELBOW_ROLL]=theta4;
+		joints[L_ARM+WRIST_YAW]=theta5;
+		prepareForward(CHAIN_L_ARM);
+		kmatTable test=getForwardEffector((Effectors)CHAIN_L_ARM);
+		if(test.almostEqualTo(targetPoint))
+		{
+			std::vector<float> r(ARM_SIZE);
+			r[SHOULDER_PITCH]=theta1;
+			r[SHOULDER_ROLL]=theta2;
+			r[ELBOW_YAW]=theta3;
+			r[ELBOW_ROLL]=theta4;
+			r[WRIST_YAW]=theta5;
+			//std::cout << "Niki!!\nTheta 1 = " << theta1 << "\nTheta 2 = " << theta2 << "\nTheta 3 = " << theta3 << "\nTheta 4 = " << theta4 << "\nTheta 5 = " << theta5 << std::endl;
+			returnResult.push_back(r);
 		}
+		else
+		{
+			//std::cout << "Htta!!\nTheta 1 = " << theta1 << "\nTheta 2 = " << theta2 << "\nTheta 3 = " << theta3 << "\nTheta 4 = " << theta4 << "\nTheta 5 = " << theta5 << std::endl;
+		}
+		//-----------------------------------------------------------------------------------------------------------------------------------------
 	}
-	return returnResult;*/
+	return returnResult;
 }
 
 std::vector<std::vector<float> > NAOKinematics::inverseRightHand(const FKvars s)
@@ -643,6 +632,7 @@ std::vector<std::vector<float> > NAOKinematics::inverseRightHand(kmatTable targe
 		(res[i])[SHOULDER_ROLL]=-(res[i])[SHOULDER_ROLL];
 		(res[i])[ELBOW_ROLL]=-(res[i])[ELBOW_ROLL];
 		(res[i])[ELBOW_YAW]=-(res[i])[ELBOW_YAW];
+		(res[i])[WRIST_YAW]=-(res[i])[WRIST_YAW];
 	}
 	return res;
 }
