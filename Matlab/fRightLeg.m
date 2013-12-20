@@ -36,8 +36,9 @@ Derivatives(3,:,:)=base*T1*T2*dT3*T4*T5*T6*Tend*Tend1;
 Derivatives(4,:,:)=base*T1*T2*T3*dT4*T5*T6*Tend*Tend1;
 Derivatives(5,:,:)=base*T1*T2*T3*T4*dT5*T6*Tend*Tend1;
 Derivatives(6,:,:)=base*T1*T2*T3*T4*T5*dT6*Tend*Tend1;
-
-
+disp('tsekare');
+dT3*T4
+pause;
 rotY = atan2(-Tendend(3,1),sqrt(Tendend(3,2)^2 + Tendend(3,3)^2));
 rotZ = atan2(Tendend(2,1),Tendend(1,1));
 rotX = atan2(Tendend(3,2),Tendend(3,3));

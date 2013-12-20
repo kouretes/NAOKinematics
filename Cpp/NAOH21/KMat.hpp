@@ -574,6 +574,7 @@ template<typename T> class RefHandle<DataContainer<T, 3, 1> > : public LoopBackH
 		{
 			return slow_mult(rop);
 		}
+		
 		template<unsigned L> D<T, M, L>  slow_mult( BaseMatrix<D, T, N, L> const& __RESTRICTED rop) const
 		{
 			D<T, M, L> res;
@@ -605,6 +606,7 @@ template<typename T> class RefHandle<DataContainer<T, 3, 1> > : public LoopBackH
 
 			return res;
 		};
+		
 		/** Generic Multiply with another square matrix, so result is same size as D<T,M,N>
 		 *	TODO: not faster than "slow" multiplication
 		 *	TODO: maybe "loose" the temp product space?
@@ -613,6 +615,7 @@ template<typename T> class RefHandle<DataContainer<T, 3, 1> > : public LoopBackH
 		{
 			return fast_mult(rop);
 		}
+		
 		D<T, M, N> & fast_mult( BaseMatrix<D, T, N, N> const&  rop) //in place mult!!!
 		{
 			if(h == NULL || rop.h == NULL)
@@ -715,7 +718,28 @@ template<typename T> class RefHandle<DataContainer<T, 3, 1> > : public LoopBackH
 			return static_cast< D<T, M, N> &> (*this);
 		};
 
+		/**
+		 * Take the abs of the Matrix
+		 */
+		D<T, M, N> abs() const
+		{
+			D<T, M, N> ngen;
 
+			if(h == NULL)
+				return ngen;
+
+			ngen.getHandle();
+
+			for (unsigned i = 0; i < M; i++)
+			{
+				for (unsigned j = 0; j < N; j++)
+				{
+					ngen(j,i) = h->data(i, j)>0 ? h->data(i,j) : -h->data(i,j);
+				}
+			}
+
+			return ngen;
+		};
 
 		/**
 		 * Multiply with	a scalar
@@ -734,7 +758,7 @@ template<typename T> class RefHandle<DataContainer<T, 3, 1> > : public LoopBackH
 		D<T, N, M> transp() const
 		{
 			D<T, N, M> ngen;
-
+			
 			if(h == NULL)
 				return ngen;
 
@@ -852,7 +876,7 @@ template<typename T> class RefHandle<DataContainer<T, 3, 1> > : public LoopBackH
 			cout << "+";
 
 			for (unsigned i = 0; i < N; i++)
-				cout << "   -   ";
+				cout << "     -     ";
 
 			cout << "+" << endl;
 
@@ -936,8 +960,19 @@ template<typename T> class RefHandle<DataContainer<T, 3, 1> > : public LoopBackH
 	};
 	//GenMatix: simply a BaseMatrix Instantation :)
 	template <typename T, unsigned M, unsigned N>class GenMatrix: public BaseMatrix<GenMatrix, T, M, N>
-{};
+	{
+		public:
+		GenMatrix<T, M, N> & pseudo_invert(GenMatrix<T, M, N> & athis);
+		GenMatrix<T, M, N> & pseudoInverse()
+		{
+			if(this->h == NULL)
+				return (*this);
 
+			this->getHandle();
+			return pseudo_invert(*this) ;
+		};
+	};
+		
 	//========================================Square matrices====================================
 	//Transpose for square matrices
 	template <typename A, unsigned S>
@@ -1201,6 +1236,21 @@ template<typename T> class RefHandle<DataContainer<T, 3, 1> > : public LoopBackH
 		std::string d("KMat::invert_square_matrixGenMatrix<A,3,3>");
 		throw SingularMatrixInvertionException(d);
 	};
+	//Pseudo Invertion of GenMatrix
+	template <typename T, unsigned M, unsigned N>
+	GenMatrix<T, M, N> & GenMatrix<T, M, N>::pseudo_invert(GenMatrix<T, M, N> & athis)
+	{
+		GenMatrix<T, M, N> ngen;
+		GenMatrix<T, N, M> ngenTransp;
+		GenMatrix<T, M, M> ngenInv;
+		ngenTransp = athis.transp();
+		ngenInv = athis*ngenTransp;
+		ngenInv.prettyPrint();
+		ngenInv.fast_invert();
+		ngen = ngenInv*athis;
+		athis = ngen;
+		return athis;
+	};
 
 
 	// Affine	transform matrix, using homogenous coordinates!!
@@ -1327,10 +1377,20 @@ template<typename T> class RefHandle<DataContainer<T, 3, 1> > : public LoopBackH
 		{
 			return B;
 		}
+
+
 		GenMatrix < T, S - 1, S - 1 > getRotation() const
 		{
 			return A;
 		}
+
+		ATMatrix<T, S> & setTranslation ( GenMatrix < T, S - 1, 1 > const& rop)
+		{
+
+			B=rop;
+			BisZero=false;
+			return *this;
+		};
 		GenMatrix < T, S - 1, 1 > getEulerAngles() const
 		{
 			GenMatrix < T, S - 1, 1 > r;
@@ -1340,9 +1400,10 @@ template<typename T> class RefHandle<DataContainer<T, 3, 1> > : public LoopBackH
 			return r;
 		}
 		//Project a point !
-		GenMatrix < T, S - 1, 1 > transform(GenMatrix < T, S - 1, 1 > const & c, T hom = 1) const
+		template<unsigned M>
+		GenMatrix < T, S - 1, 1 > transform(GenMatrix < T, S - 1, M > const & c, T hom = 1) const
 		{
-			GenMatrix < T, S - 1, 1 > nc;
+			GenMatrix < T, S - 1, M > nc;
 
 			if (AisZero == true) //A matrix zero, dont try to do the math:p
 			{
@@ -1359,9 +1420,10 @@ template<typename T> class RefHandle<DataContainer<T, 3, 1> > : public LoopBackH
 
 			if (BisZero == false) //do some more math for the translatonal part
 			{
-				GenMatrix < T, S - 1, 1 > t = B;
+
+				GenMatrix < T, S - 1, M > t = B;
 				t.scalar_mult(hom);
-				nc += t;
+				nc.column_add(t);
 			}
 
 			return nc;
@@ -1659,6 +1721,56 @@ template<typename T> class RefHandle<DataContainer<T, 3, 1> > : public LoopBackH
 			Rz *= Ry;
 			Rz *= Rx;
 			Rot = Rz;
+		}
+		template<typename T> static GenMatrix<T, 4, 4> castToGenMatrix(ATMatrix<T, 4> At)
+		{
+			GenMatrix<T, 4, 4> Gen;
+			Gen(0,0) = At(0,0);
+			Gen(0,1) = At(0,1);
+			Gen(0,2) = At(0,2);
+			Gen(0,3) = At(0,3);
+			Gen(1,0) = At(1,0);
+			Gen(1,1) = At(1,1);
+			Gen(1,2) = At(1,2);
+			Gen(1,3) = At(1,3);
+			Gen(2,0) = At(2,0);
+			Gen(2,1) = At(2,1);
+			Gen(2,2) = At(2,2);
+			Gen(2,3) = At(2,3);
+			Gen(3,0) = 0;
+			Gen(3,1) = 0;
+			Gen(3,2) = 0;
+			Gen(3,3) = 1;
+			return Gen;
+		}
+		
+		template<typename T> static void makeDHDerivative(GenMatrix<T, 4, 4> & Gen, T alpha, T theta)
+		{
+			Gen.zero();
+			Gen(0,0) = -sin(theta);
+			Gen(0, 1) = -cos(theta);
+			//Gen(0, 2) = 0;
+			//Gen(0, 3) = 0;
+			Gen(1, 0) = cos(theta) * cos(alpha);
+			Gen(1, 1) = -sin(theta) * cos(alpha);
+			//Gen(1, 2) = 0;
+			//Gen(1, 3) = 0;
+			Gen(2, 0) = cos(theta) * sin(alpha);
+			Gen(2, 1) = -sin(theta) * sin(alpha);
+			//Gen(2, 2) = 0;
+			//Gen(2, 3) = 0;
+			//Gen(3, 0) = 0;
+			//Gen(3, 1) = 0;
+			//Gen(3, 2) = 0;
+			//Gen(3, 3) = 0;
+
+
+			//kmatTable T2;
+			//kmatJacobianTable T3;
+			//KMatTransf::castToGenMatrix(T2, T3);
+			//KMatTransf::makeDHTransformation(T2,0.0, -M_PI_2, 0.0, M_PI_2);
+			//T3*=Transf;
+			//T3.prettyPrint();
 		}
 
 	};
