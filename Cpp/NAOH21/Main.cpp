@@ -9,7 +9,7 @@ using namespace KDeviceLists;
 
 int main(){
 	NAOKinematics nkin;
-	NAOKinematics::kmatTable output1, output2, output3, output4, output5;
+	NAOKinematics::kmatTable output1, output2, output3, output4, output5,T;
 	
 	std::vector<float> joints(NUMOFJOINTS);
 	double pi = KMath::KMat::transformations::PI;
@@ -19,19 +19,19 @@ int main(){
 	joints[L_ARM+SHOULDER_ROLL]=M_PI_4;
 	joints[L_ARM+ELBOW_YAW]=0;
 	joints[L_ARM+ELBOW_ROLL]=0;
-	//joints[L_ARM+WRIST_YAW]=0;
+
 	//Right Hand
 	joints[R_ARM+SHOULDER_PITCH]=M_PI_2;
 	joints[R_ARM+SHOULDER_ROLL]=-M_PI_4;
 	joints[R_ARM+ELBOW_YAW]=0;
 	joints[R_ARM+ELBOW_ROLL]=0;
-	//joints[R_ARM+WRIST_YAW]=0;
+
 	//Left Leg
-	joints[L_LEG+HIP_YAW_PITCH]=-M_PI_4;
+	joints[L_LEG+HIP_YAW_PITCH]=0;
 	joints[L_LEG+HIP_ROLL]=0;
 	joints[L_LEG+HIP_PITCH]=0;
-	joints[L_LEG+KNEE_PITCH]=0;
-	joints[L_LEG+ANKLE_PITCH]=0;
+	joints[L_LEG+KNEE_PITCH]=M_PI/4;
+	joints[L_LEG+ANKLE_PITCH]=-M_PI/4;
 	joints[L_LEG+ANKLE_ROLL]=0;
 	//Right Leg
 	joints[R_LEG+HIP_YAW_PITCH]=0;
@@ -69,16 +69,80 @@ int main(){
 	vector<vector<float> > result;
 
 	result = nkin.inverseLeftHand(output1);
-	if(!result.empty())
+	if(!result.empty()){
 		cout << "--Solution exists 1" << endl;
+		for(int j=0; j<result[0].size(); j++){
+			cout << "angle" << j << " = " << result[0][j] << " ";
+		}
+		cout << endl;
+		joints[L_ARM+SHOULDER_PITCH]=0;
+		joints[L_ARM+SHOULDER_ROLL]=0;
+		joints[L_ARM+ELBOW_YAW]=0;
+		joints[L_ARM+ELBOW_ROLL]=0;
+		nkin.setJoints(joints);
+		result = nkin.jacobianInverseLeftHand(output1);
+		for(int j=0; j<result[0].size(); j++){
+			cout << "angle" << j << " = " << result[0][j] << " ";
+		}
+		cout << endl;
+	}
 	result = nkin.inverseRightHand(output2);
-	if(!result.empty())
+	if(!result.empty()){
 		cout << "--Solution exists 2" << endl;
+		for(int j=0; j<result[0].size(); j++){
+			cout << "angle" << j << " = " << result[0][j] << " ";
+		}
+		cout << endl;
+		joints[R_ARM+SHOULDER_PITCH]=0;
+		joints[R_ARM+SHOULDER_ROLL]=0;
+		joints[R_ARM+ELBOW_YAW]=0;
+		joints[R_ARM+ELBOW_ROLL]=0;
+		nkin.setJoints(joints);
+		result = nkin.jacobianInverseRightHand(output2);
+		for(int j=0; j<result[0].size(); j++){
+			cout << "angle" << j << " = " << result[0][j] << " ";
+		}
+		cout << endl;
+	}
 	result = nkin.inverseLeftLeg(output3);
-	if(!result.empty())
+	if(!result.empty()){
 		cout << "--Solution exists 3" << endl;
+		for(int j=0; j<result[0].size(); j++){
+			cout << "angle" << j << " = " << result[0][j] << " ";
+		}
+		cout << endl;
+		joints[L_LEG+HIP_YAW_PITCH]=0;
+		joints[L_LEG+HIP_ROLL]=0;
+		joints[L_LEG+HIP_PITCH]=0;
+		joints[L_LEG+KNEE_PITCH]=0;
+		joints[L_LEG+ANKLE_PITCH]=0;
+		joints[L_LEG+ANKLE_ROLL]=0;
+		nkin.setJoints(joints);
+		result = nkin.jacobianInverseLeftLeg(output3);
+		for(int j=0; j<result[0].size(); j++){
+			cout << "angle" << j << " = " << result[0][j] << " ";
+		}
+		cout << endl;
+	}
 	result = nkin.inverseRightLeg(output4);
-	if(!result.empty())
+	if(!result.empty()){
 		cout << "--Solution exists 4" << endl;
+		for(int j=0; j<result[0].size(); j++){
+			cout << "angle" << j << " = " << result[0][j] << " ";
+		}
+		cout << endl;
+		joints[R_LEG+HIP_YAW_PITCH]=0;
+		joints[R_LEG+HIP_ROLL]=0;
+		joints[R_LEG+HIP_PITCH]=0;
+		joints[R_LEG+KNEE_PITCH]=0;
+		joints[R_LEG+ANKLE_PITCH]=0;
+		joints[R_LEG+ANKLE_ROLL]=0;
+		nkin.setJoints(joints);
+		result = nkin.jacobianInverseRightLeg(output4);
+		for(int j=0; j<result[0].size(); j++){
+			cout << "angle" << j << " = " << result[0][j] << " ";
+		}
+		cout << endl;
+	}
 	return 0;
 }

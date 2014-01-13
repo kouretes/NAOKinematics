@@ -10,6 +10,8 @@ Mask(1:3,4)=1;
 
 [T s Derivatives]=forward(initial);
 [k l m]=size(Derivatives);
+%k chain size
+%l,m = 4
 J=zeros(k,(l)*m);
 TOL=1e-2;
 initial=initial(1:k)
@@ -40,7 +42,7 @@ while((quality>TOL && ITER<=MAXITER)|| ITER==0)
 	end
 	
 	for i=1:k		
-	 p=squeeze(Derivatives(i,:,:));%.*Mask;
+	 p=squeeze(Derivatives(i,:,:));%apla p = Derivatives(i,:,:) san return
 	 p=p(:);
 	 %p=p(1:end-4);
 	 J(i,:)=p;

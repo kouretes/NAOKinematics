@@ -8,11 +8,13 @@ using namespace KDeviceLists;
 
 double PI=M_PI;
 double PI_2=M_PI_2;
-NAOKinematics::	NAOKinematics() :T(FR_SIZE),joints(FR_SIZE),coms(FR_SIZE),masses(FR_SIZE)
+NAOKinematics::	NAOKinematics() :T(FR_SIZE),Tjacobian(FR_SIZE),joints(FR_SIZE),coms(FR_SIZE),masses(FR_SIZE)
 {
 	kmatTable t1,t2;
-	for (unsigned i=0;i<FR_SIZE;i++)
+	for (int i=0;i<FR_SIZE;i++){
 		T[i].identity();
+		Tjacobian[i].identity();
+	}
 
 	//Base and End  Transforms
 	//--------HEAD
@@ -178,7 +180,8 @@ bool NAOKinematics::setJoints(std::vector<AngleType> jointsset)
 		return false;
 	}
 	joints=jointsset;
-	return prepareForward();
+	prepareForward();
+	return true;
 }
 
 bool NAOKinematics::setChain(KDeviceLists::ChainsNames ch, std::vector<AngleType> jointsset)
@@ -219,10 +222,11 @@ bool NAOKinematics::setChain(KDeviceLists::ChainsNames ch, std::vector<AngleType
 	{
 		joints[frstart+i]=jointsset[i];
 	}
-	return prepareForward(ch);
+	prepareForward(ch);
+	return true;
 }
 
-bool NAOKinematics::prepareForward(KDeviceLists::ChainsNames ch)
+void NAOKinematics::prepareForward(KDeviceLists::ChainsNames ch)
 {
 	if(ch==CHAIN_L_ARM || ch==CHAINS_SIZE)
 	{
@@ -265,8 +269,6 @@ bool NAOKinematics::prepareForward(KDeviceLists::ChainsNames ch)
 		KMatTransf::makeDHTransformation(T[HEAD+YAW], 0.0, 0.0, 0.0, (double)joints[HEAD+YAW]);
 		KMatTransf::makeDHTransformation(T[HEAD+PITCH], 0.0, -PI_2, 0.0, (double)joints[HEAD+PITCH] - PI_2);
 	}
-
-	return true;
 }
 
 NAOKinematics::kmatTable NAOKinematics::getForwardEffector(Effectors ef)
@@ -842,4 +844,3 @@ std::vector<std::vector<float> > NAOKinematics::inverseRightLeg(kmatTable target
 
 	return res;
 }
-

@@ -61,11 +61,13 @@ public:
 		KVecDouble3 a;
 	};
 	typedef KMath::KMat::ATMatrix<double, 4> kmatTable;
+	typedef KMath::KMat::GenMatrix<double, 4, 4> kmatJacobianTable;
 	typedef float AngleType;
 	typedef std::vector<std::vector<AngleType> > AngleContainer ;
 private:
 
 	std::vector<kmatTable> T;
+	std::vector<kmatJacobianTable> Tjacobian;
 
 	std::vector<AngleType> joints;
 	std::vector<KVecDouble3> coms;
@@ -82,7 +84,13 @@ private:
 	 * @param ef Which chain or effector
 	 * @brief prepare dh matrices
 	 * */
-	bool prepareForward(KDeviceLists::ChainsNames=KDeviceLists::CHAINS_SIZE);
+	void prepareForward(KDeviceLists::ChainsNames=KDeviceLists::CHAINS_SIZE);
+	/**
+	 * @fn void prepareDerivatives(KDeviceLists::ChainsNames)
+	 * @param ef Which chain or effector
+	 * @brief prepare dhderivative matrices
+	 * */
+	void prepareDerivatives(KDeviceLists::ChainsNames=KDeviceLists::CHAINS_SIZE);
 
 	KVecDouble3 calculateCoMChain(Frames start, Frames BaseFrame, int startdown,float &mass);
 
@@ -129,6 +137,8 @@ public:
 	 * */
 	AngleContainer inverseHead(const FKvars s, bool withAngles, bool topCamera);
 	AngleContainer inverseHead(kmatTable targetPoint, bool withAngles, bool topCamera);
+	AngleContainer jacobianInverseHead(const FKvars s, bool topCamera);
+	AngleContainer jacobianInverseHead(kmatTable targetPoint, bool topCamera);
 
 	/**
 	 * vector<vector<float> > inverseLeftHand(const FKvars s);
@@ -138,6 +148,8 @@ public:
 	 * */
 	AngleContainer inverseLeftHand(const FKvars s);
 	AngleContainer inverseLeftHand(kmatTable targetPoint);
+	AngleContainer jacobianInverseLeftHand(const FKvars s);
+	AngleContainer jacobianInverseLeftHand(kmatTable targetPoint);
 
 	/**
 	 * vector<vector<float> > inverseRightHand(const FKvars s)
@@ -147,15 +159,20 @@ public:
 	 * */
 	AngleContainer inverseRightHand(const FKvars s);
 	AngleContainer inverseRightHand(kmatTable targetPoint);
+	AngleContainer jacobianInverseRightHand(const FKvars s);
+	AngleContainer jacobianInverseRightHand(kmatTable targetPoint);
+	
 	/**
 	 * vector<vector<float> > inverseLeftLeg(const FKvars s)
 	 * @brief Inverse Kinematics for the left leg (DON'T try to understand the code, it's just maths)
 	 * @returns vector<vector<float> >. It returns n vectors of float where n is the number of solutions (almost every time it's 0 or 1).
 		Each solutions vector contains the angles with this order: LHipYawPitch,LHipRoll,LHipPitch,LKneePitch,LAnklePitch,LAnkleRoll
 	 * */
-	AngleContainer  inverseLeftLeg(const FKvars s);
+	AngleContainer inverseLeftLeg(const FKvars s);
 	AngleContainer inverseLeftLeg(kmatTable targetPoint);
-
+	AngleContainer jacobianInverseLeftLeg(const FKvars s);
+	AngleContainer jacobianInverseLeftLeg(kmatTable targetPoint);
+	
 	/**
 	 * vector<vector<float> > inverseRightLeg(float px,float py,float pz, float rx, float ry, float rz)
 	 * @brief Inverse Kinematics for the right leg (DON'T try to understand the code, it's just maths)
@@ -164,7 +181,16 @@ public:
 	 * */
 	AngleContainer inverseRightLeg(const FKvars s);
 	AngleContainer inverseRightLeg(kmatTable targetPoint);
-
+	AngleContainer jacobianInverseRightLeg(const FKvars s);
+	AngleContainer jacobianInverseRightLeg(kmatTable targetPoint);
+	
+private:
+	//Jacobian Inverse Kinematics
+	AngleContainer jacobianInverseHead(kmatTable targetPoint, KDeviceLists::ChainsNames ch, bool topCamera);
+	AngleContainer jacobianInverseHands(kmatTable targetPoint, KDeviceLists::ChainsNames ch);
+	AngleContainer jacobianInverseLegs(kmatTable targetPoint, KDeviceLists::ChainsNames ch);
+	
+	
 	static kmatTable getTransformation(const FKvars s)
 	{
 		kmatTable T;
@@ -184,6 +210,7 @@ public:
 		//Mirror Y translation
 		targetPoint(1,3)=-targetPoint(1,3);
 	}
+		
 };
 
 #endif
