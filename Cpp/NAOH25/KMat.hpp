@@ -1245,7 +1245,7 @@ template<typename T> class RefHandle<DataContainer<T, 3, 1> > : public LoopBackH
 		GenMatrix<T, M, M> ngenInv;
 		ngenTransp = athis.transp();
 		ngenInv = athis*ngenTransp;
-		ngenInv.prettyPrint();
+		//ngenInv.prettyPrint();
 		ngenInv.fast_invert();
 		ngen = ngenInv*athis;
 		athis = ngen;

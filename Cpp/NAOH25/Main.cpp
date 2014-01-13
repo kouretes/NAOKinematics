@@ -14,8 +14,8 @@ int main(){
 	std::vector<float> joints(NUMOFJOINTS);
 	double pi = KMath::KMat::transformations::PI;
 	//Left Hand
-	joints[L_ARM+SHOULDER_PITCH]=M_PI_2;
-	joints[L_ARM+SHOULDER_ROLL]=M_PI_4;
+	joints[L_ARM+SHOULDER_PITCH]=0.2;
+	joints[L_ARM+SHOULDER_ROLL]=0.1;
 	joints[L_ARM+ELBOW_YAW]=0;
 	joints[L_ARM+ELBOW_ROLL]=0;
 	joints[L_ARM+WRIST_YAW]=0.0;
@@ -75,7 +75,8 @@ int main(){
 			cout << "angle" << j << " = " << result[0][j] << " ";
 		}
 		cout << endl;
-		joints[L_ARM+SHOULDER_PITCH]=0;
+		//Under construction
+		/*joints[L_ARM+SHOULDER_PITCH]=0;
 		joints[L_ARM+SHOULDER_ROLL]=0;
 		joints[L_ARM+ELBOW_YAW]=0;
 		joints[L_ARM+ELBOW_ROLL]=0;
@@ -85,7 +86,7 @@ int main(){
 		for(int j=0; j<result[0].size(); j++){
 			cout << "angle" << j << " = " << result[0][j] << " ";
 		}
-		cout << endl;
+		cout << endl;*/
 	}
 	result = nkin.inverseRightHand(output2);
 	if(!result.empty()){
@@ -94,6 +95,8 @@ int main(){
 			cout << "angle" << j << " = " << result[0][j] << " ";
 		}
 		cout << endl;
+		//Under construction
+		/*
 		joints[R_ARM+SHOULDER_PITCH]=0;
 		joints[R_ARM+SHOULDER_ROLL]=0;
 		joints[R_ARM+ELBOW_YAW]=0;
@@ -105,6 +108,7 @@ int main(){
 			cout << "angle" << j << " = " << result[0][j] << " ";
 		}
 		cout << endl;
+		*/
 	}
 	result = nkin.inverseLeftLeg(output3);
 	if(!result.empty()){
