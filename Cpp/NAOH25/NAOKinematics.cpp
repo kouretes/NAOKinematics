@@ -38,7 +38,7 @@ NAOKinematics::	NAOKinematics() :T(FR_SIZE),Tjacobian(FR_SIZE),joints(FR_SIZE),c
 	//This is the correct
 	//KMatTransf::makeTranslation(t1, HandOffsetX,0.0,HandOffsetZ );
 	//THIS is the fix
-	KMatTransf::makeTranslation(t1, LowerArmLength+HandOffsetX,0.0,HandOffsetZ );
+	KMatTransf::makeTranslation(t1, LowerArmLength+HandOffsetX,0.0,-HandOffsetZ );
 	T[FR_END_T+CHAIN_R_ARM]*=t1;
 	
 	//CoM coordinates
